@@ -2766,6 +2766,38 @@ const demoNews = [
 
 function renderActualites() {
   // Sources
-  document.getElementById("newsSources").innerHTML = newsSources.map(s => `
+  const srcEl = document.getElementById("newsSources");
+  if (srcEl) srcEl.innerHTML = newsSources.map(s => `
     <a href="${s.url}" target="_blank" rel="noopener" style="text-decoration:none">
-      <div class="card" style="border-top:3px solid $
+      <div class="card" style="border-top:3px solid ${s.color};text-align:center;padding:14px">
+        <div style="font-size:1.8rem;margin-bottom:6px">${s.icon}</div>
+        <div style="font-weight:700;font-size:0.82rem;color:var(--text)">${s.name}</div>
+        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:3px">${s.desc}</div>
+      </div>
+    </a>`).join("");
+
+  // Charger les news : priorité JSON chargé, sinon démo
+  if (!allNews || allNews.length === 0) {
+    allNews = [...demoNews];
+    analyzeAllNewsSignals();
+  }
+  filterNews();
+}
+
+// Populer les selects TA et prédictions
+function populateTASelects() {
+  ["atTicker","predTicker"].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el || el.options.length > 1) return;
+    stocks.forEach(s => {
+      const opt = document.createElement("option");
+      opt.value = s.ticker;
+      opt.textContent = `${s.ticker} — ${s.name}`;
+      el.appendChild(opt);
+    });
+  });
+}
+
+</script>
+</body>
+</html>
