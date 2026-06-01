@@ -1,0 +1,45 @@
+[2026-05-28 11:37:42] [INFO] RSS: Agence Ecofin
+[2026-05-28 11:37:42] [INFO]   → 0 articles depuis Agence Ecofin
+[2026-05-28 11:37:43] [INFO] RSS: Agence Ecofin Finance
+[2026-05-28 11:37:44] [INFO]   → 0 articles depuis Agence Ecofin Finance
+[2026-05-28 11:37:45] [INFO] RSS: Commodafrica
+[2026-05-28 11:37:46] [INFO]   → 0 articles depuis Commodafrica
+[2026-05-28 11:37:49] [INFO] HTML: sika.finance/actualites
+[2026-05-28 11:37:49] [WARN] Erreur https://sika.finance/actualites: 404 Client Error: Not Found for url: https://www.sika.finance/actualites
+[2026-05-28 11:37:51] [INFO] HTML: fratmat.info/economie
+[2026-05-28 11:37:52] [INFO]   → 15 articles depuis fratmat.info
+[2026-05-28 11:45:54] [INFO] RSS: Agence Ecofin
+[2026-05-28 11:45:55] [INFO]   → 0 articles depuis Agence Ecofin
+[2026-05-28 11:45:56] [INFO] RSS: Agence Ecofin Finance
+[2026-05-28 11:45:56] [INFO]   → 0 articles depuis Agence Ecofin Finance
+[2026-05-28 11:45:57] [INFO] RSS: Commodafrica
+[2026-05-28 11:45:58] [INFO]   → 0 articles depuis Commodafrica
+[2026-05-28 11:46:01] [INFO] HTML: sika.finance/actualites
+[2026-05-28 11:46:01] [WARN] Erreur https://sika.finance/actualites: 404 Client Error: Not Found for url: https://www.sika.finance/actualites
+[2026-05-28 11:46:03] [INFO] HTML: fratmat.info/economie
+[2026-05-28 11:46:04] [INFO]   → 15 articles depuis fratmat.info
+[2026-05-28 12:22:38] [INFO] RSS: Agence Ecofin
+[2026-05-28 12:22:39] [INFO]   → 0 articles depuis Agence Ecofin
+[2026-05-28 12:22:40] [INFO] RSS: Agence Ecofin Finance
+[2026-05-28 12:22:41] [INFO]   → 0 articles depuis Agence Ecofin Finance
+[2026-05-28 12:22:42] [INFO] RSS: Commodafrica
+[2026-05-28 12:22:42] [INFO]   → 0 articles depuis Commodafrica
+[2026-05-28 12:22:45] [INFO] HTML: sikafinance.com/actualites
+[2026-05-28 12:22:45] [WARN] Erreur https://www.sikafinance.com/actualites: 404 Client Error: Not Found for url: https://www.sikafinance.com/actualites
+[2026-05-28 12:22:47] [INFO] HTML: fratmat.info/economie
+[2026-05-28 12:22:48] [INFO]   → 15 articles depuis fratmat.info
+[2026-05-29 14:06:17] [INFO] RSS: Agence Ecofin
+[2026-05-29 14:06:18] [INFO]   → 0 articles depuis Agence Ecofin
+[2026-05-29 14:06:19] [INFO] RSS: Agence Ecofin Finance
+[2026-05-29 14:06:19] [INFO]   → 0 articles depuis Agence Ecofin Finance
+[2026-05-29 14:06:20] [INFO] RSS: Commodafrica
+[2026-05-29 14:06:21] [INFO]   → 0 articles depuis Commodafrica
+[2026-05-29 14:06:24] [INFO] HTML: sikafinance.com/actualites
+[2026-05-29 14:06:24] [WARN] Erreur https://www.sikafinance.com/actualites: 404 Client Error: Not Found for url: https://www.sikafinance.com/actualites
+[2026-05-29 14:06:25] [INFO] HTML: fratmat.info/economie
+[2026-05-29 14:06:26] [INFO]   → 15 articles depuis fratmat.info
+[2026-06-01 12:17:50] [WARN] feedparser non installé — RSS ignorés
+[2026-06-01 12:17:52] [INFO] HTML: sikafinance.com/actualites
+[2026-06-01 12:17:52] [WARN] Erreur https://www.sikafinance.com/actualites: HTTPSConnectionPool(host='www.sikafinance.com', port=443): Max retries exceeded with url: /actualites (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')))
+[2026-06-01 12:17:54] [INFO] HTML: fratmat.info/economie
+[2026-06-01 12:17:54] [WARN] Erreur https://www.fratmat.info/economie: HTTPSConnectionPool(host='www.fratmat.info', port=443): Max retries exceeded with url: /economie (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')))

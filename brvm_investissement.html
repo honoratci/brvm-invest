@@ -1,0 +1,2771 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRVM Invest Pro — Votre Assistant Boursier</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --primary: #1a3c6e;
+    --primary-light: #2a5298;
+    --accent: #f4a300;
+    --accent-light: #ffc107;
+    --success: #28a745;
+    --danger: #dc3545;
+    --warning: #fd7e14;
+    --bg: #f0f4f8;
+    --card: #ffffff;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ——— TOP BAR ——— */
+  .topbar {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white; padding: 0 24px; display: flex; align-items: center;
+    justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .topbar .logo { display: flex; align-items: center; gap: 10px; font-size: 1.2rem; font-weight: 700; }
+  .topbar .logo span { color: var(--accent); }
+  .topbar .tagline { font-size: 0.8rem; opacity: 0.8; }
+  .last-update { font-size: 0.75rem; opacity: 0.7; }
+
+  /* ——— NAV ——— */
+  .nav {
+    background: white; border-bottom: 1px solid var(--border);
+    display: flex; padding: 0 24px; gap: 4px; overflow-x: auto;
+    position: sticky; top: 60px; z-index: 99;
+  }
+  .nav-btn {
+    padding: 12px 20px; border: none; background: none; cursor: pointer;
+    font-size: 0.9rem; color: var(--text-muted); border-bottom: 3px solid transparent;
+    white-space: nowrap; transition: all 0.2s; font-weight: 500;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .nav-btn:hover { color: var(--primary); }
+  .nav-btn.active { color: var(--primary); border-bottom-color: var(--accent); font-weight: 700; }
+
+  /* ——— MAIN ——— */
+  .main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ——— CARDS ——— */
+  .card {
+    background: var(--card); border-radius: 12px; padding: 20px;
+    box-shadow: var(--shadow); border: 1px solid var(--border);
+  }
+  .card h3 { font-size: 1rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
+  .card .value { font-size: 2rem; font-weight: 700; color: var(--text); }
+  .card .sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+  .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+
+  /* ——— KPI CARD ——— */
+  .kpi-card { background: var(--card); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); }
+  .kpi-card .kpi-icon { font-size: 2rem; margin-bottom: 8px; }
+  .kpi-card .kpi-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+  .kpi-card .kpi-value { font-size: 1.8rem; font-weight: 800; margin: 4px 0; }
+  .kpi-card .kpi-change { font-size: 0.82rem; display: flex; align-items: center; gap: 4px; }
+  .kpi-card .kpi-change.up { color: var(--success); }
+  .kpi-card .kpi-change.down { color: var(--danger); }
+
+  /* ——— BADGES ——— */
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+  .badge-buy { background: #d4edda; color: #155724; }
+  .badge-sell { background: #f8d7da; color: #721c24; }
+  .badge-hold { background: #fff3cd; color: #856404; }
+  .badge-sector { background: #e3f2fd; color: #1565c0; }
+
+  /* ——— SCORE BARS ——— */
+  .score-bar-wrap { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+  .score-bar-wrap label { font-size: 0.8rem; color: var(--text-muted); width: 120px; flex-shrink: 0; }
+  .score-bar { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+  .score-bar-val { font-size: 0.8rem; font-weight: 700; width: 30px; text-align: right; }
+
+  /* ——— TABLES ——— */
+  .table-wrap { overflow-x: auto; border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  thead th {
+    background: var(--primary); color: white; padding: 10px 12px;
+    text-align: left; font-weight: 600; font-size: 0.8rem;
+    position: sticky; top: 0;
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  tbody tr:hover { background: #f8faff; }
+  tbody td { padding: 10px 12px; }
+  .ticker { font-weight: 700; color: var(--primary); font-family: monospace; }
+
+  /* ——— SEARCH & FILTERS ——— */
+  .filters { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .search-box {
+    flex: 1; min-width: 200px; padding: 9px 14px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 0.9rem; outline: none;
+  }
+  .search-box:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(42,82,152,0.1); }
+  .filter-select {
+    padding: 9px 14px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 0.88rem; cursor: pointer; background: white;
+  }
+
+  /* ——— BUTTONS ——— */
+  .btn {
+    padding: 9px 18px; border: none; border-radius: 8px; cursor: pointer;
+    font-size: 0.88rem; font-weight: 600; transition: all 0.2s;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-light); }
+  .btn-accent { background: var(--accent); color: white; }
+  .btn-accent:hover { background: var(--accent-light); color: var(--text); }
+  .btn-success { background: var(--success); color: white; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+  .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
+
+  /* ——— SCORE CIRCLE ——— */
+  .score-circle {
+    width: 72px; height: 72px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; font-weight: 900;
+    font-size: 1.4rem; flex-shrink: 0;
+  }
+  .score-a { background: #d4edda; color: #155724; }
+  .score-b { background: #cce5ff; color: #004085; }
+  .score-c { background: #fff3cd; color: #856404; }
+  .score-d { background: #f8d7da; color: #721c24; }
+
+  /* ——— SECTION HEADERS ——— */
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px; gap: 16px;
+  }
+  .section-header h2 { font-size: 1.4rem; font-weight: 800; color: var(--text); }
+  .section-header p { font-size: 0.88rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* ——— PORTFOLIO ——— */
+  .portfolio-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .pf-stat { background: white; border-radius: 10px; padding: 16px; box-shadow: var(--shadow); text-align: center; }
+  .pf-stat .pf-label { font-size: 0.8rem; color: var(--text-muted); }
+  .pf-stat .pf-val { font-size: 1.6rem; font-weight: 800; margin-top: 4px; }
+
+  /* ——— FORM ELEMENTS ——— */
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+  .form-group input, .form-group select {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 0.9rem; outline: none;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--primary-light); }
+
+  /* ——— SIMULATOR ——— */
+  .sim-slider { width: 100%; margin: 8px 0; accent-color: var(--primary); }
+  .sim-result { background: linear-gradient(135deg, #1a3c6e, #2a5298); color: white; border-radius: 12px; padding: 24px; text-align: center; }
+  .sim-result .big-num { font-size: 2.5rem; font-weight: 900; color: var(--accent); }
+
+  /* ——— CHART BARS (CSS only) ——— */
+  .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 120px; padding: 8px 0; }
+  .bar { flex: 1; border-radius: 4px 4px 0 0; min-width: 20px; position: relative; transition: all 0.4s; cursor: pointer; }
+  .bar:hover { opacity: 0.85; }
+  .bar-label { font-size: 0.65rem; text-align: center; margin-top: 4px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ——— ALERTS ——— */
+  .alert-card {
+    display: flex; align-items: flex-start; gap: 14px; padding: 16px;
+    border-radius: 10px; border-left: 4px solid; margin-bottom: 12px;
+  }
+  .alert-buy { background: #f0fff4; border-color: var(--success); }
+  .alert-sell { background: #fff5f5; border-color: var(--danger); }
+  .alert-info { background: #eff6ff; border-color: #3b82f6; }
+  .alert-icon { font-size: 1.4rem; }
+  .alert-text h4 { font-size: 0.92rem; font-weight: 700; }
+  .alert-text p { font-size: 0.82rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* ——— TIPS ——— */
+  .tip-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 16px; margin-top: 16px; }
+  .tip-box .tip-title { font-weight: 700; color: #92400e; font-size: 0.88rem; margin-bottom: 6px; }
+  .tip-box p { font-size: 0.85rem; color: #78350f; line-height: 1.5; }
+
+  /* ——— GLOSSARY ——— */
+  .glossary-item { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+  .glossary-q { padding: 12px 16px; background: #f8faff; cursor: pointer; font-weight: 600; font-size: 0.9rem; display: flex; justify-content: space-between; }
+  .glossary-a { padding: 12px 16px; font-size: 0.85rem; line-height: 1.6; color: var(--text-muted); display: none; }
+  .glossary-item.open .glossary-a { display: block; }
+
+  /* ——— RESPONSIVE ——— */
+  @media (max-width: 600px) {
+    .main { padding: 12px; }
+    .topbar .tagline { display: none; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  /* ——— PROGRESS ——— */
+  .progress { height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; margin: 8px 0; }
+  .progress-bar { height: 100%; border-radius: 5px; transition: width 0.5s; }
+
+  /* ——— MODAL ——— */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: 16px; padding: 28px; width: 90%; max-width: 560px; box-shadow: var(--shadow-lg); }
+  .modal h3 { font-size: 1.2rem; margin-bottom: 16px; }
+
+  /* Pie chart */
+  .pie-wrap { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .pie-legend { flex: 1; min-width: 140px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.82rem; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">
+    📈 BRVM <span>Invest Pro</span>
+    <div class="tagline" style="font-size:0.72rem;opacity:0.7;font-weight:400;margin-top:2px">Votre assistant boursier UEMOA</div>
+  </div>
+  <div class="last-update" id="lastUpdate"></div>
+</div>
+
+<!-- NAVIGATION -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="showSection('dashboard')">🏠 Dashboard</button>
+  <button class="nav-btn" onclick="showSection('analyse')">🔍 Analyse des Titres</button>
+  <button class="nav-btn" onclick="showSection('scoring')">⭐ Scoring & Alertes</button>
+  <button class="nav-btn" onclick="showSection('portefeuille')">💼 Mon Portefeuille</button>
+  <button class="nav-btn" onclick="showSection('simulateur')">🧮 Simulateur</button>
+  <button class="nav-btn" onclick="showSection('analyse-technique')">📊 Analyse Technique</button>
+  <button class="nav-btn" onclick="showSection('predictions')">🔮 Prédictions & Trading</button>
+  <button class="nav-btn" onclick="showSection('actualites')">📰 Actualités</button>
+  <button class="nav-btn" onclick="showSection('guide')">📚 Guide Débutant</button>
+  <button class="nav-btn" onclick="showSection('maj')">🔄 Mettre à Jour</button>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- ================ DASHBOARD ================ -->
+  <section class="section active" id="dashboard">
+    <div class="section-header">
+      <div>
+        <h2>Tableau de Bord BRVM</h2>
+        <p>Vue d'ensemble du marché — Données de référence (mettez à jour régulièrement)</p>
+      </div>
+    </div>
+
+    <!-- KPIs marché -->
+    <div class="grid-4" style="margin-bottom:20px">
+      <div class="kpi-card">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-label">BRVM Composite</div>
+        <div class="kpi-value" id="idx-composite">215,42</div>
+        <div class="kpi-change up">▲ +1,2% cette semaine</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🏦</div>
+        <div class="kpi-label">BRVM 30</div>
+        <div class="kpi-value" id="idx-30">189,75</div>
+        <div class="kpi-change up">▲ +0,8%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-label">Volume échangé</div>
+        <div class="kpi-value">1,2 Md</div>
+        <div class="kpi-change" style="color:var(--text-muted)">FCFA — session</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-label">Titres en hausse</div>
+        <div class="kpi-value" id="hausses">18</div>
+        <div class="kpi-change up">▲ sur 45 titres actifs</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Top performers -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h3 style="color:var(--text);font-size:1rem">🏆 Top Performers (Score)</h3>
+          <span class="badge badge-buy">OPPORTUNITÉS</span>
+        </div>
+        <div id="top-performers"></div>
+      </div>
+
+      <!-- Répartition sectorielle -->
+      <div class="card">
+        <h3 style="color:var(--text);font-size:1rem;margin-bottom:16px">🗂️ Répartition Sectorielle BRVM</h3>
+        <div class="pie-wrap">
+          <canvas id="pieChart" width="160" height="160"></canvas>
+          <div class="pie-legend" id="pieLegend"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-top:20px">
+      <div class="card">
+        <h3 style="color:var(--text);font-size:1rem;margin-bottom:12px">📰 Actualités marché</h3>
+        <div id="newsBox"></div>
+      </div>
+      <div class="card" style="grid-column: span 2">
+        <h3 style="color:var(--text);font-size:1rem;margin-bottom:12px">📊 Performance sectorielle (variation %)</h3>
+        <div class="bar-chart" id="sectorBars"></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap" id="sectorLabels"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================ ANALYSE DES TITRES ================ -->
+  <section class="section" id="analyse">
+    <div class="section-header">
+      <div>
+        <h2>Analyse des Titres BRVM</h2>
+        <p>Comparez les fondamentaux de toutes les actions cotées</p>
+      </div>
+    </div>
+
+    <div class="filters">
+      <input class="search-box" type="text" id="searchInput" placeholder="🔍 Rechercher un titre (ex: SONATEL, SGBC...)" oninput="filterTable()">
+      <select class="filter-select" id="sectorFilter" onchange="filterTable()">
+        <option value="">Tous les secteurs</option>
+        <option value="Finance">Banques & Finance</option>
+        <option value="Telecom">Télécoms</option>
+        <option value="Industrie">Industrie</option>
+        <option value="Distribution">Distribution</option>
+        <option value="Agriculture">Agriculture</option>
+        <option value="Energie">Énergie</option>
+        <option value="Transport">Transport</option>
+      </select>
+      <select class="filter-select" id="signalFilter" onchange="filterTable()">
+        <option value="">Tous les signaux</option>
+        <option value="ACHETER">ACHETER</option>
+        <option value="CONSERVER">CONSERVER</option>
+        <option value="VENDRE">VENDRE</option>
+      </select>
+    </div>
+
+    <div class="card" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Société</th>
+              <th>Secteur</th>
+              <th>Cours (FCFA)</th>
+              <th>Var. %</th>
+              <th>PER</th>
+              <th>Rdt Div. %</th>
+              <th>Cap. Mkt (Md)</th>
+              <th>Score /100</th>
+              <th>Signal</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="stockTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tip-box" style="margin-top:16px">
+      <div class="tip-title">💡 Comment lire ce tableau ?</div>
+      <p><strong>PER (Price Earning Ratio)</strong> : Plus il est bas, plus l'action est potentiellement sous-évaluée. Un PER &lt; 10 est attractif à la BRVM. <strong>Rendement Dividende</strong> : Le % du cours reçu en dividende annuel — visez &gt;5% pour un bon revenu passif. <strong>Score</strong> : Calcul automatique sur 100 basé sur 5 critères fondamentaux.</p>
+    </div>
+  </section>
+
+  <!-- ================ SCORING & ALERTES ================ -->
+  <section class="section" id="scoring">
+    <div class="section-header">
+      <div>
+        <h2>Scoring & Alertes d'Investissement</h2>
+        <p>Détail du score de chaque titre et opportunités du moment</p>
+      </div>
+    </div>
+
+    <!-- Alertes -->
+    <div class="card" style="margin-bottom:20px">
+      <h3 style="font-size:1rem;color:var(--text);margin-bottom:14px">🔔 Alertes du Moment</h3>
+      <div id="alertsBox"></div>
+    </div>
+
+    <!-- Détail scoring d'un titre -->
+    <div class="grid-2">
+      <div class="card">
+        <h3 style="font-size:1rem;color:var(--text);margin-bottom:14px">🔬 Analyser un Titre en Détail</h3>
+        <select class="filter-select" id="scoreSelect" style="width:100%;margin-bottom:16px" onchange="showScoreDetail()">
+          <option value="">-- Choisir un titre --</option>
+        </select>
+        <div id="scoreDetail"></div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:1rem;color:var(--text);margin-bottom:14px">📊 Méthodologie de Scoring</h3>
+        <div style="font-size:0.85rem;line-height:1.7;color:var(--text-muted)">
+          <p>Le score d'attractivité est calculé sur <strong>5 critères</strong> pondérés :</p>
+          <br>
+          <div class="score-bar-wrap"><label>💰 Valorisation (PER)</label><div class="score-bar"><div class="score-bar-fill" style="width:30%;background:#3b82f6"></div></div><span class="score-bar-val" style="color:#3b82f6">30%</span></div>
+          <div class="score-bar-wrap"><label>💵 Dividende</label><div class="score-bar"><div class="score-bar-fill" style="width:25%;background:#10b981"></div></div><span class="score-bar-val" style="color:#10b981">25%</span></div>
+          <div class="score-bar-wrap"><label>📈 Momentum</label><div class="score-bar"><div class="score-bar-fill" style="width:20%;background:#f59e0b"></div></div><span class="score-bar-val" style="color:#f59e0b">20%</span></div>
+          <div class="score-bar-wrap"><label>💧 Liquidité</label><div class="score-bar"><div class="score-bar-fill" style="width:15%;background:#8b5cf6"></div></div><span class="score-bar-val" style="color:#8b5cf6">15%</span></div>
+          <div class="score-bar-wrap"><label>📊 Fondamentaux</label><div class="score-bar"><div class="score-bar-fill" style="width:10%;background:#ef4444"></div></div><span class="score-bar-val" style="color:#ef4444">10%</span></div>
+          <br>
+          <div style="background:#f0f9ff;border-radius:8px;padding:12px;font-size:0.82rem">
+            <strong>Note :</strong> Score &gt;70 = ACHETER | 50-70 = CONSERVER | &lt;50 = SURVEILLER/VENDRE
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================ PORTEFEUILLE ================ -->
+  <section class="section" id="portefeuille">
+    <div class="section-header">
+      <div>
+        <h2>Mon Portefeuille BRVM</h2>
+        <p>Suivez vos positions, vos plus-values et la diversification de votre investissement</p>
+      </div>
+      <button class="btn btn-accent" onclick="document.getElementById('addModal').classList.add('open')">+ Ajouter une Position</button>
+    </div>
+
+    <!-- Résumé portefeuille -->
+    <div class="portfolio-summary" id="pfSummary"></div>
+
+    <!-- Graphe diversification + table positions -->
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <h3 style="font-size:1rem;color:var(--text);margin-bottom:14px">🗂️ Diversification du Portefeuille</h3>
+        <div class="pie-wrap">
+          <canvas id="pfPieChart" width="160" height="160"></canvas>
+          <div class="pie-legend" id="pfPieLegend"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:1rem;color:var(--text);margin-bottom:14px">📊 P&L par Position</h3>
+        <div class="bar-chart" id="pfBars" style="height:140px"></div>
+        <div id="pfBarLabels" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"></div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Société</th>
+              <th>Qté</th>
+              <th>Prix Achat</th>
+              <th>Cours Actuel</th>
+              <th>Valeur</th>
+              <th>P&L (FCFA)</th>
+              <th>P&L %</th>
+              <th>Poids %</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="pfTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================ SIMULATEUR ================ -->
+  <section class="section" id="simulateur">
+    <div class="section-header">
+      <div>
+        <h2>Simulateur d'Investissement BRVM</h2>
+        <p>Projetez vos gains potentiels et testez différentes stratégies</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Sim simple -->
+      <div class="card">
+        <h3 style="font-size:1.05rem;color:var(--text);margin-bottom:20px">📈 Simulation d'un Investissement Unique</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Montant investi (FCFA)</label>
+            <input type="number" id="simAmount" value="500000" oninput="calcSim()">
+          </div>
+          <div class="form-group">
+            <label>Durée (années)</label>
+            <input type="number" id="simYears" value="5" min="1" max="30" oninput="calcSim()">
+          </div>
+          <div class="form-group">
+            <label>Titre BRVM</label>
+            <select id="simStock" onchange="calcSim()">
+              <option value="">-- Choisir --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Scénario</label>
+            <select id="simScenario" onchange="calcSim()">
+              <option value="pessimiste">Pessimiste (-2%/an)</option>
+              <option value="base" selected>Base (+8%/an)</option>
+              <option value="optimiste">Optimiste (+15%/an)</option>
+              <option value="custom">Personnalisé</option>
+            </select>
+          </div>
+        </div>
+        <div id="customRate" style="display:none" class="form-group" style="margin-bottom:12px">
+          <label>Taux annuel personnalisé (%)</label>
+          <input type="number" id="simCustomRate" value="10" oninput="calcSim()">
+        </div>
+        <div class="sim-result" id="simResult"></div>
+
+        <div class="tip-box" style="margin-top:16px">
+          <div class="tip-title">⚠️ Rappel important</div>
+          <p>Les projections sont illustratives. Les performances passées ne garantissent pas les résultats futurs. La BRVM comporte des risques de liquidité et de change (FCFA/EUR).</p>
+        </div>
+      </div>
+
+      <!-- Comparaison portefeuille -->
+      <div class="card">
+        <h3 style="font-size:1.05rem;color:var(--text);margin-bottom:20px">🔄 Comparaison Stratégies</h3>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Capital initial (FCFA)</label>
+          <input type="number" id="compCapital" value="1000000" oninput="calcComparison()">
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Horizon (années)</label>
+          <input type="number" id="compYears" value="10" min="1" max="30" oninput="calcComparison()">
+        </div>
+        <div id="compResult"></div>
+      </div>
+    </div>
+
+    <!-- Simulateur d'allocation -->
+    <div class="card" style="margin-top:20px">
+      <h3 style="font-size:1.05rem;color:var(--text);margin-bottom:20px">⚖️ Simulateur d'Allocation de Portefeuille</h3>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px">Répartissez votre capital entre les secteurs et visualisez le rendement attendu</p>
+      <div id="allocSliders"></div>
+      <div class="form-group" style="margin-bottom:16px;max-width:300px">
+        <label>Capital total (FCFA)</label>
+        <input type="number" id="allocCapital" value="2000000" oninput="calcAlloc()">
+      </div>
+      <div id="allocResult"></div>
+    </div>
+  </section>
+
+  <!-- ================ GUIDE DÉBUTANT ================ -->
+  <section class="section" id="guide">
+    <div class="section-header">
+      <div>
+        <h2>📚 Guide du Débutant — Investir à la BRVM</h2>
+        <p>Tout ce que vous devez savoir pour commencer à investir en bourse UEMOA</p>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-bottom:24px">
+      <div class="card" style="text-align:center;border-top:4px solid #3b82f6">
+        <div style="font-size:2.5rem;margin-bottom:12px">🏛️</div>
+        <h3 style="font-size:1rem;color:var(--text)">Étape 1</h3>
+        <h4 style="margin:8px 0;color:var(--primary)">Ouvrir un compte titres</h4>
+        <p style="font-size:0.82rem;color:var(--text-muted)">Contactez un Société de Gestion et d'Intermédiation (SGI) agréée par la BRVM (ex: Hudson & Cie, Coris Bourse, BICI Bourse...)</p>
+      </div>
+      <div class="card" style="text-align:center;border-top:4px solid #10b981">
+        <div style="font-size:2.5rem;margin-bottom:12px">🔍</div>
+        <h3 style="font-size:1rem;color:var(--text)">Étape 2</h3>
+        <h4 style="margin:8px 0;color:var(--primary)">Analyser avant d'acheter</h4>
+        <p style="font-size:0.82rem;color:var(--text-muted)">Utilisez les onglets Analyse et Scoring de cette application pour identifier les titres attractifs selon vos objectifs.</p>
+      </div>
+      <div class="card" style="text-align:center;border-top:4px solid #f59e0b">
+        <div style="font-size:2.5rem;margin-bottom:12px">⚖️</div>
+        <h3 style="font-size:1rem;color:var(--text)">Étape 3</h3>
+        <h4 style="margin:8px 0;color:var(--primary)">Diversifier son portefeuille</h4>
+        <p style="font-size:0.82rem;color:var(--text-muted)">Ne mettez pas tous vos œufs dans le même panier : répartissez entre 5-8 titres de secteurs différents.</p>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:24px">
+      <div class="card">
+        <h3 style="font-size:1rem;color:var(--text);margin-bottom:16px">📖 Glossaire Boursier BRVM</h3>
+        <div id="glossaryBox"></div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:1rem;color:var(--text);margin-bottom:16px">🎯 Les 5 Règles d'Or pour la BRVM</h3>
+        <div id="rulesBox"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:1rem;color:var(--text);margin-bottom:16px">🏦 SGI (Sociétés de Gestion & Intermédiation) Agréées BRVM</h3>
+      <div id="sgiBox" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px"></div>
+    </div>
+  </section>
+</div>
+
+  <!-- ================ ANALYSE TECHNIQUE ================ -->
+  <section class="section" id="analyse-technique">
+    <div class="section-header">
+      <div><h2>📊 Analyse Technique</h2><p>Indicateurs avancés : RSI, MACD, Bollinger, Moyennes Mobiles, Support/Résistance</p></div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;align-items:center">
+      <select class="filter-select" id="atTicker" onchange="renderTA()" style="min-width:260px">
+        <option value="">-- Choisir un titre --</option>
+      </select>
+      <select class="filter-select" id="atPeriod" onchange="renderTA()">
+        <option value="30">1 Mois</option>
+        <option value="90" selected>3 Mois</option>
+        <option value="180">6 Mois</option>
+        <option value="252">1 An</option>
+      </select>
+      <button class="btn btn-primary" onclick="renderTA()">🔄 Actualiser</button>
+    </div>
+
+    <!-- Résumé indicateurs -->
+    <div class="grid-4" id="taKpis" style="margin-bottom:20px"></div>
+
+    <!-- Chart prix -->
+    <div class="card" style="margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="font-size:1rem;color:var(--text)" id="taChartTitle">Cours & Moyennes Mobiles</h3>
+        <div style="display:flex;gap:6px">
+          <span style="font-size:0.75rem;display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:16px;height:3px;background:#2a5298"></span>Cours</span>
+          <span style="font-size:0.75rem;display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:16px;height:3px;background:#f59e0b"></span>MA20</span>
+          <span style="font-size:0.75rem;display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:16px;height:3px;background:#ef4444"></span>MA50</span>
+          <span style="font-size:0.75rem;display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:16px;height:2px;background:#10b981;opacity:0.4"></span>Bollinger</span>
+        </div>
+      </div>
+      <div style="height:280px"><canvas id="chartPrice"></canvas></div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:20px">
+      <!-- RSI -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="font-size:0.95rem;color:var(--text)">RSI (14) — Force Relative</h3>
+          <span id="rsiValue" class="badge badge-hold">─</span>
+        </div>
+        <div style="height:160px"><canvas id="chartRSI"></canvas></div>
+        <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted);margin-top:6px">
+          <span style="color:var(--danger)">▼ Survendu &lt;30</span>
+          <span>Zone neutre 30–70</span>
+          <span style="color:var(--warning)">▲ Suracheté &gt;70</span>
+        </div>
+      </div>
+      <!-- MACD -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="font-size:0.95rem;color:var(--text)">MACD (12,26,9) — Momentum</h3>
+          <span id="macdValue" class="badge badge-hold">─</span>
+        </div>
+        <div style="height:160px"><canvas id="chartMACD"></canvas></div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:6px">Bleu=MACD | Orange=Signal | Barres=Histogramme</div>
+      </div>
+    </div>
+
+    <!-- Support / Résistance -->
+    <div class="card">
+      <h3 style="font-size:1rem;color:var(--text);margin-bottom:14px">🧱 Niveaux Support & Résistance</h3>
+      <div id="srTable"></div>
+    </div>
+  </section>
+
+  <!-- ================ PRÉDICTIONS & TRADING ================ -->
+  <section class="section" id="predictions">
+    <div class="section-header">
+      <div><h2>🔮 Prédictions & Propositions de Trading</h2><p>Analyse multi-signaux — rôle d'analyste boursier BRVM</p></div>
+    </div>
+
+    <!-- Sélecteur + analyse individuelle -->
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <h3 style="font-size:1rem;color:var(--text);margin-bottom:14px">🎯 Analyser un Titre</h3>
+        <select class="filter-select" id="predTicker" style="width:100%;margin-bottom:16px" onchange="renderPrediction()">
+          <option value="">-- Choisir un titre --</option>
+        </select>
+        <div id="predResult"></div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:1rem;color:var(--text);margin-bottom:14px">📋 Proposition de Trading</h3>
+        <div id="tradingCard"></div>
+        <div id="predNewsSignals" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)"></div>
+      </div>
+    </div>
+
+    <!-- Top opportunités de trading -->
+    <div class="card" style="margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h3 style="font-size:1rem;color:var(--text)">🏆 Top 5 Opportunités du Moment</h3>
+        <button class="btn btn-primary btn-sm" onclick="renderTopTrades()">🔄 Recalculer</button>
+      </div>
+      <div id="topTrades"></div>
+    </div>
+
+    <!-- Tableau de bord des signaux -->
+    <div class="card">
+      <h3 style="font-size:1rem;color:var(--text);margin-bottom:14px">📡 Tableau de Bord des Signaux — Tous les Titres</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Ticker</th><th>Prix</th><th>RSI</th><th>MACD</th><th>Bollinger</th>
+            <th>MA Trend</th><th>Score Haussier</th><th>Score Baissier</th><th>Verdict</th>
+          </tr></thead>
+          <tbody id="signalTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================ ACTUALITÉS ================ -->
+  <section class="section" id="actualites">
+    <div class="section-header">
+      <div>
+        <h2>📰 Signaux Actualités BRVM</h2>
+        <p>Uniquement les news <strong>non encore pricées</strong> dans les cours — filtre strict Impact 0 éliminé</p>
+      </div>
+      <button class="btn btn-primary" onclick="document.getElementById('newsJsonInput').click()">📂 Charger actualités (JSON)</button>
+      <input type="file" id="newsJsonInput" accept=".json" style="display:none" onchange="loadNewsJson(this)">
+    </div>
+
+    <!-- Tableau de bord des signaux news -->
+    <div id="newsSignalDashboard" style="display:none;margin-bottom:20px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px">
+        <div class="card" style="text-align:center;padding:14px;border-top:3px solid #6366f1">
+          <div style="font-size:1.6rem;font-weight:800;color:#6366f1" id="statTotal">0</div>
+          <div style="font-size:0.78rem;color:var(--text-muted)">News analysées</div>
+        </div>
+        <div class="card" style="text-align:center;padding:14px;border-top:3px solid var(--success)">
+          <div style="font-size:1.6rem;font-weight:800;color:var(--success)" id="statFresh">0</div>
+          <div style="font-size:0.78rem;color:var(--text-muted)">Signaux actifs</div>
+        </div>
+        <div class="card" style="text-align:center;padding:14px;border-top:3px solid var(--danger)">
+          <div style="font-size:1.6rem;font-weight:800;color:var(--danger)" id="statFiltered">0</div>
+          <div style="font-size:0.78rem;color:var(--text-muted)">Déjà pricées (filtrées)</div>
+        </div>
+        <div class="card" style="text-align:center;padding:14px;border-top:3px solid var(--warning)">
+          <div style="font-size:1.6rem;font-weight:800;color:var(--warning)" id="statBuy">0</div>
+          <div style="font-size:0.78rem;color:var(--text-muted)">Signaux ACHAT</div>
+        </div>
+        <div class="card" style="text-align:center;padding:14px;border-top:3px solid #ef4444">
+          <div style="font-size:1.6rem;font-weight:800;color:#ef4444" id="statSell">0</div>
+          <div style="font-size:0.78rem;color:var(--text-muted)">Signaux VENTE</div>
+        </div>
+      </div>
+      <!-- Top signaux haute priorité -->
+      <div id="topNewsSignals"></div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filters" style="margin-bottom:16px">
+      <input class="search-box" id="newsSearch" placeholder="🔍 Ticker, titre, source..." oninput="filterNews()">
+      <select class="filter-select" id="newsCatFilter" onchange="filterNews()">
+        <option value="">Toutes catégories</option>
+        <option value="Résultats">Résultats financiers</option>
+        <option value="Dividende">Dividendes</option>
+        <option value="Stratégie">Stratégie & M&A</option>
+        <option value="Marché">Marché BRVM</option>
+        <option value="Macro">Économie UEMOA</option>
+      </select>
+      <select class="filter-select" id="newsActionFilter" onchange="filterNews()">
+        <option value="">Toutes actions</option>
+        <option value="buy">Signaux ACHAT</option>
+        <option value="sell">Signaux VENTE</option>
+        <option value="watch">SURVEILLER</option>
+      </select>
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;cursor:pointer">
+        <input type="checkbox" id="newsOnlyFresh" checked onchange="filterNews()">
+        <span>Signaux actifs seulement</span>
+      </label>
+    </div>
+
+    <!-- Flux d'actualités avec signaux -->
+    <div id="newsFeed"></div>
+  </section>
+
+  <!-- ================ MISE À JOUR DES COURS ================ -->
+  <section class="section" id="maj">
+    <div class="section-header">
+      <div>
+        <h2>🔄 Mettre à Jour les Cours BRVM</h2>
+        <p>Mise à jour automatique quotidienne + méthodes manuelles</p>
+      </div>
+    </div>
+
+    <!-- Bannière statut Auto Update -->
+    <div id="autoUpdateBanner" style="background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:2rem">🤖</div>
+        <div>
+          <div style="font-weight:700;font-size:1rem">Mise à jour automatique</div>
+          <div id="autoUpdateStatus" style="font-size:0.82rem;opacity:0.85;margin-top:2px">
+            Script <strong>brvm_auto_update.py</strong> configuré — tâche planifiée 18h30 lun-ven
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <label style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);color:#fff;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600">
+          📂 Charger brvm_cours.json
+          <input type="file" id="autoJsonInput" accept=".json" style="display:none" onchange="loadAutoJson(this)">
+        </label>
+        <button class="btn" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);color:#fff;font-size:0.85rem" onclick="switchMajTab('pdf')">📑 Ou déposer PDF</button>
+      </div>
+    </div>
+
+    <!-- Méthodes -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px">
+      <div class="card" style="border-top:4px solid #6366f1;text-align:center;padding:16px">
+        <div style="font-size:1.8rem;margin-bottom:6px">🤖</div>
+        <h4 style="margin-bottom:4px;color:var(--primary);font-size:0.9rem">Auto (Recommandé)</h4>
+        <p style="font-size:0.78rem;color:var(--text-muted)">brvm_auto_update.py télécharge et patche l'app chaque soir</p>
+      </div>
+      <div class="card" style="border-top:4px solid #3b82f6;text-align:center;padding:16px">
+        <div style="font-size:1.8rem;margin-bottom:6px">📑</div>
+        <h4 style="margin-bottom:4px;color:var(--primary);font-size:0.9rem">Bulletin PDF</h4>
+        <p style="font-size:0.78rem;color:var(--text-muted)">Dépose dans bulletins/ ou upload ici directement</p>
+      </div>
+      <div class="card" style="border-top:4px solid #10b981;text-align:center;padding:16px">
+        <div style="font-size:1.8rem;margin-bottom:6px">📄</div>
+        <h4 style="margin-bottom:4px;color:var(--primary);font-size:0.9rem">Import CSV / JSON</h4>
+        <p style="font-size:0.78rem;color:var(--text-muted)">Fichier généré par les scripts Python</p>
+      </div>
+      <div class="card" style="border-top:4px solid #f59e0b;text-align:center;padding:16px">
+        <div style="font-size:1.8rem;margin-bottom:6px">✏️</div>
+        <h4 style="margin-bottom:4px;color:var(--primary);font-size:0.9rem">Saisie Manuelle</h4>
+        <p style="font-size:0.78rem;color:var(--text-muted)">Modification directe titre par titre</p>
+      </div>
+    </div>
+
+    <!-- Onglets méthodes -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-primary" id="tab-pdf-btn" onclick="switchMajTab('pdf')" style="border-color:#3b82f6;color:#fff;background:#3b82f6">📑 Bulletin PDF ⭐</button>
+      <button class="btn btn-outline" id="tab-manuel-btn" onclick="switchMajTab('manuel')">✏️ Saisie Manuelle</button>
+      <button class="btn btn-outline" id="tab-csv-btn" onclick="switchMajTab('csv')">📄 Import CSV</button>
+      <button class="btn btn-outline" id="tab-paste-btn" onclick="switchMajTab('paste')">📋 Coller depuis BRVM</button>
+    </div>
+
+    <!-- TAB: Saisie manuelle -->
+    <div id="tab-manuel" class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h3 style="font-size:1rem;color:var(--text)">Modification des cours — Cliquez sur un champ pour éditer</h3>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-accent" onclick="saveMajManuel()">💾 Appliquer les modifications</button>
+          <button class="btn btn-outline btn-sm" onclick="resetPrices()">↺ Réinitialiser</button>
+        </div>
+      </div>
+      <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:12px;background:#eff6ff;padding:10px;border-radius:8px">
+        💡 <strong>Comment faire :</strong> Allez sur <strong>brvm.org → Cours des actions</strong>, relevez le cours et la variation, puis saisissez-les ci-dessous. Cliquez "Appliquer" pour mettre à jour tout l'app.
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Société</th>
+              <th>Cours actuel (FCFA)</th>
+              <th>Variation % (ex: +1.5 ou -0.8)</th>
+              <th>Rendement div. %</th>
+              <th>PER</th>
+            </tr>
+          </thead>
+          <tbody id="majTableBody"></tbody>
+        </table>
+      </div>
+      <div id="majStatus" style="margin-top:12px;font-size:0.85rem"></div>
+    </div>
+
+    <!-- TAB: Import CSV -->
+    <div id="tab-csv" class="card" style="display:none">
+      <h3 style="font-size:1rem;color:var(--text);margin-bottom:16px">📄 Importer un fichier CSV</h3>
+      <div style="background:#f0fdf4;border:2px dashed #86efac;border-radius:10px;padding:32px;text-align:center;margin-bottom:16px" id="dropZone" ondragover="event.preventDefault()" ondrop="handleCsvDrop(event)">
+        <div style="font-size:2rem;margin-bottom:8px">📂</div>
+        <p style="font-weight:600;margin-bottom:8px">Glissez votre fichier CSV ici</p>
+        <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:12px">ou</p>
+        <input type="file" id="csvFileInput" accept=".csv" onchange="handleCsvFile(this)" style="display:none">
+        <button class="btn btn-primary" onclick="document.getElementById('csvFileInput').click()">Choisir un fichier CSV</button>
+      </div>
+      <div style="background:#f8faff;border-radius:8px;padding:14px;font-size:0.82rem;margin-bottom:16px">
+        <strong>Format CSV attendu (généré par le script Python) :</strong><br>
+        <code style="background:#e2e8f0;padding:4px 8px;border-radius:4px;display:inline-block;margin-top:6px">ticker,cours,variation,dividende,per<br>SNTS,18500,0.5,8.5,14.8<br>SGBC,11500,1.2,5.2,12.4</code>
+      </div>
+      <div id="csvPreview"></div>
+    </div>
+
+    <!-- TAB: Coller depuis BRVM -->
+    <div id="tab-paste" class="card" style="display:none">
+      <h3 style="font-size:1rem;color:var(--text);margin-bottom:16px">📋 Coller les données depuis BRVM.org</h3>
+      <div style="background:#eff6ff;border-radius:8px;padding:14px;font-size:0.82rem;margin-bottom:16px">
+        <strong>Mode d'emploi :</strong>
+        <ol style="margin-top:8px;padding-left:20px;line-height:1.8">
+          <li>Allez sur <strong>brvm.org → Marché → Cours des actions</strong></li>
+          <li>Sélectionnez tout le tableau de cours (Ctrl+A dans le tableau)</li>
+          <li>Copiez (Ctrl+C)</li>
+          <li>Collez ci-dessous (Ctrl+V) et cliquez "Analyser et importer"</li>
+        </ol>
+      </div>
+      <textarea id="pasteArea" style="width:100%;height:180px;padding:12px;border:1px solid var(--border);border-radius:8px;font-family:monospace;font-size:0.82rem;resize:vertical" placeholder="Collez ici le contenu copié depuis brvm.org..."></textarea>
+      <div style="display:flex;gap:12px;margin-top:12px">
+        <button class="btn btn-primary" onclick="parsePastedData()">🔍 Analyser et Importer</button>
+        <button class="btn btn-outline" onclick="document.getElementById('pasteArea').value=''">Effacer</button>
+      </div>
+      <div id="pasteResult" style="margin-top:14px"></div>
+    </div>
+
+    <!-- TAB: PDF Bulletin -->
+    <div id="tab-pdf" class="card" style="display:none">
+      <h3 style="font-size:1rem;color:var(--text);margin-bottom:16px">📑 Analyser le Bulletin de Cotation BRVM (PDF)</h3>
+
+      <div style="background:#eff6ff;border-radius:8px;padding:14px;font-size:0.82rem;margin-bottom:16px">
+        <strong>Comment obtenir le bulletin PDF :</strong>
+        <ol style="margin-top:8px;padding-left:20px;line-height:1.8">
+          <li>Allez sur <strong>brvm.org → Publications → Bulletins de cotation</strong></li>
+          <li>Téléchargez le dernier bulletin (fichier PDF du jour)</li>
+          <li>Déposez-le dans la zone ci-dessous — l'app analyse et extrait les cours automatiquement</li>
+        </ol>
+      </div>
+
+      <!-- Zone de dépôt PDF -->
+      <div id="pdfDropZone"
+           style="border:3px dashed #93c5fd;border-radius:12px;padding:40px;text-align:center;background:#f0f9ff;cursor:pointer;transition:all 0.2s;margin-bottom:16px"
+           ondragover="pdfDragOver(event)" ondragleave="pdfDragLeave(event)" ondrop="pdfDrop(event)"
+           onclick="document.getElementById('pdfFileInput').click()">
+        <div style="font-size:3rem;margin-bottom:10px">📑</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:6px">Déposez le bulletin PDF ici</div>
+        <div style="font-size:0.82rem;color:var(--text-muted)">ou cliquez pour choisir un fichier PDF</div>
+        <input type="file" id="pdfFileInput" accept=".pdf" style="display:none" onchange="handlePdfFile(this)">
+      </div>
+
+      <!-- Barre de progression -->
+      <div id="pdfProgress" style="display:none;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <span id="pdfProgressText" style="font-size:0.85rem;font-weight:600">Analyse en cours...</span>
+          <span id="pdfPageInfo" style="font-size:0.78rem;color:var(--text-muted)"></span>
+        </div>
+        <div class="progress"><div id="pdfProgressBar" class="progress-bar" style="background:var(--primary);width:0%"></div></div>
+      </div>
+
+      <!-- Résultats PDF -->
+      <div id="pdfResult"></div>
+    </div>
+
+    <!-- Dernière mise à jour -->
+    <div class="card" style="margin-top:20px;background:#1a3c6e;color:white">
+      <div style="display:flex;align-items:center;gap:16px">
+        <span style="font-size:2rem">🕐</span>
+        <div>
+          <div style="font-weight:700">Dernière mise à jour des cours</div>
+          <div id="lastMajDate" style="font-size:0.9rem;opacity:0.85;margin-top:2px">Données de référence (jamais mises à jour manuellement)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<!-- MODAL AJOUT POSITION -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <h3>➕ Ajouter une Position</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Titre</label>
+        <select id="pfStock">
+          <option value="">-- Choisir --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Quantité d'actions</label>
+        <input type="number" id="pfQty" placeholder="Ex: 100" min="1">
+      </div>
+      <div class="form-group">
+        <label>Prix d'achat unitaire (FCFA)</label>
+        <input type="number" id="pfPrice" placeholder="Ex: 15000">
+      </div>
+      <div class="form-group">
+        <label>Date d'achat</label>
+        <input type="date" id="pfDate">
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-outline" onclick="document.getElementById('addModal').classList.remove('open')">Annuler</button>
+      <button class="btn btn-success" onclick="addPosition()">✅ Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== DONNÉES BRVM ====================
+const stocks = [
+  // Finance / Banques
+  // ── Finance / Banques ──────────────────────────────────────────────────────
+  { ticker:"SGBC",  name:"Société Générale Côte d'Ivoire",    sector:"Finance",      country:"CI", price:37000.0,  var1d:0.0,  per:11.23, div:4.50, capMkt:732,  vol:4227,  beta:0.8,  per5y:12.5, notes:"Solide bancaire, dividendes réguliers — Prestige" },
+  { ticker:"ECOC",  name:"Ecobank Côte d'Ivoire",             sector:"Finance",      country:"CI", price:16290.0,  var1d:-0.24,  per:14.14, div:4.79, capMkt:391,  vol:148,   beta:0.9,  per5y:13.0, notes:"Filiale ivoirienne Ecobank — Prestige" },
+  { ticker:"ETIT",  name:"Ecobank Transnational Inc.",         sector:"Finance",      country:"TG", price:30.0,     var1d:0.0, per:1.52,  div:2.09, capMkt:980,  vol:409392,beta:0.9,  per5y:3.0,  notes:"Holding panafricain, très liquide, faible cours unitaire" },
+  { ticker:"SIBC",  name:"Société Ivoirienne de Banque",      sector:"Finance",      country:"CI", price:8500.0,   var1d:3.58, per:13.85, div:4.29, capMkt:140,  vol:4940,  beta:0.78, per5y:12.0, notes:"Soutenu par CIH Maroc — Prestige" },
+  { ticker:"NSBC",  name:"NSIA Banque Côte d'Ivoire",         sector:"Finance",      country:"CI", price:18000.0,  var1d:0.0,  per:10.94, div:3.71, capMkt:270,  vol:1697,  beta:0.72, per5y:12.0, notes:"Croissance du crédit soutenue" },
+  { ticker:"CBIBF", name:"Coris Bank International",          sector:"Finance",      country:"BF", price:21500.0,  var1d:-0.23,  per:10.49, div:2.59, capMkt:429,  vol:226,   beta:0.65, per5y:12.0, notes:"Très forte progression 2025, Burkina Faso" },
+  { ticker:"BOAB",  name:"Bank of Africa Bénin",              sector:"Finance",      country:"BJ", price:8800.0,   var1d:-1.13, per:17.95, div:6.57, capMkt:150,  vol:4659,  beta:0.75, per5y:14.0, notes:"Filiale BOA Bénin" },
+  { ticker:"BOAC",  name:"Bank of Africa Côte d'Ivoire",      sector:"Finance",      country:"CI", price:9000.0,   var1d:1.66, per:11.02, div:6.77, capMkt:148,  vol:4991,  beta:0.8,  per5y:11.5, notes:"Filiale BOA CI" },
+  { ticker:"BOABF", name:"Bank of Africa Burkina Faso",       sector:"Finance",      country:"BF", price:5600.0,   var1d:-0.26,  per:12.57, div:7.22, capMkt:92,   vol:1460,  beta:0.7,  per5y:12.0, notes:"Filiale BOA Burkina Faso" },
+  { ticker:"BOAM",  name:"Bank of Africa Mali",               sector:"Finance",      country:"ML", price:5200.0,   var1d:0.85,  per:12.39, div:4.74, capMkt:84,   vol:7441,  beta:0.72, per5y:11.5, notes:"Filiale BOA Mali" },
+  { ticker:"BOAS",  name:"Bank of Africa Sénégal",            sector:"Finance",      country:"SN", price:7700.0,   var1d:0.26, per:12.73, div:4.52, capMkt:130,  vol:25990, beta:0.78, per5y:12.5, notes:"Filiale BOA Sénégal" },
+  { ticker:"BOAN",  name:"Bank of Africa Niger",              sector:"Finance",      country:"NG", price:3730.0,   var1d:-0.81,  per:190.08,div:5.59, capMkt:63,   vol:2678,  beta:0.85, per5y:15.0, notes:"Filiale BOA Niger" },
+  { ticker:"BICC",  name:"BICI Côte d'Ivoire",                sector:"Finance",      country:"CI", price:28300.0,  var1d:0.17,  per:12.55, div:3.02, capMkt:330,  vol:117,   beta:0.75, per5y:13.0, notes:"Banque internationale CI" },
+  { ticker:"ORGT",  name:"Oragroup Togo",                     sector:"Finance",      country:"TG", price:2650.0,   var1d:1.14,  per:8.79,  div:2.17, capMkt:46,   vol:2192,  beta:0.88, per5y:9.5,  notes:"Groupe bancaire panafricain" },
+  { ticker:"BACI",  name:"Banque Atlantique Côte d'Ivoire",   sector:"Finance",      country:"CI", price:5200,   var1d:0.8,   per:9.5,   div:6.1,  capMkt:156,  vol:320,   beta:0.7,  per5y:10.8, notes:"Bon rendement dividende" },
+
+  // ── Télécoms ───────────────────────────────────────────────────────────────
+  { ticker:"SNTS",  name:"Sonatel (Orange Sénégal)",          sector:"Telecom",      country:"SN", price:28450.0,  var1d:-0.17, per:6.88,  div:6.12, capMkt:1707, vol:1415,  beta:0.6,  per5y:8.5,  notes:"Leader télécoms UEMOA, dividende exceptionnel — Prestige" },
+  { ticker:"ORAC",  name:"Orange Côte d'Ivoire",              sector:"Telecom",      country:"CI", price:16000.0,  var1d:0.0,  per:14.10, div:4.20, capMkt:1256, vol:348,   beta:0.55, per5y:14.5, notes:"Fort dividende, croissance data mobile — Prestige" },
+  { ticker:"ONTBF", name:"ONATEL Burkina Faso",               sector:"Telecom",      country:"BF", price:2900.0,   var1d:0.0,  per:13.37, div:6.64, capMkt:171,  vol:1805,  beta:0.72, per5y:12.5, notes:"Télécom national Burkina — Prestige" },
+
+  // ── Agriculture ────────────────────────────────────────────────────────────
+  { ticker:"PALC",  name:"Palm CI — Palmci",                  sector:"Agriculture",  country:"CI", price:7975.0,   var1d:0.0,  per:7.78,  div:5.79, capMkt:234,  vol:2077,  beta:1.1,  per5y:9.5,  notes:"Huile de palme, forte demande — Prestige" },
+  { ticker:"SPHC",  name:"SAPH CI",                           sector:"Agriculture",  country:"CI", price:7055.0,   var1d:2.11,  per:7.11,  div:4.66, capMkt:152,  vol:866,   beta:0.95, per5y:8.2,  notes:"Hévéaculture — Prestige" },
+  { ticker:"SIFC",  name:"SIFCA Group",                       sector:"Agriculture",  country:"CI", price:5700,   var1d:-0.4,  per:11.5,  div:4.2,  capMkt:684,  vol:580,   beta:1.05, per5y:12.3, notes:"Diversifié agro (hévéa, palme, sucre)" },
+  { ticker:"SCRC",  name:"Sucrivoire CI",                     sector:"Agriculture",  country:"CI", price:2790.0,   var1d:-0.18, per:0.0,   div:1.62, capMkt:50,   vol:17388, beta:1.2,  per5y:0.0,  notes:"Canne à sucre, très volatile" },
+  { ticker:"SOGC",  name:"SOGB CI",                           sector:"Agriculture",  country:"CI", price:7450.0,   var1d:2.53,  per:12.79, div:7.14, capMkt:111,  vol:608,   beta:0.9,  per5y:13.0, notes:"Caoutchouc naturel, bon dividende" },
+
+  // ── Industrie ──────────────────────────────────────────────────────────────
+  { ticker:"NTLC",  name:"Nestlé Côte d'Ivoire",             sector:"Industrie",    country:"CI", price:12995.0,  var1d:1.46,  per:15.58, div:5.55, capMkt:156,  vol:653,   beta:0.7,  per5y:16.0, notes:"Agroalimentaire — Prestige" },
+  { ticker:"SMBC",  name:"SMB CI",                            sector:"Industrie",    country:"CI", price:13500.0,  var1d:-0.37,  per:7.75,  div:4.74, capMkt:117,  vol:275,   beta:1.05, per5y:8.5,  notes:"Bois et matériaux — Prestige" },
+  { ticker:"SLBC",  name:"SOLIBRA CI",                        sector:"Industrie",    country:"CI", price:38000.0,  var1d:-1.31,  per:13.67, div:2.82, capMkt:547,  vol:251,   beta:0.5,  per5y:15.0, notes:"Brasserie leader CI, faible liquidité" },
+  { ticker:"STBC",  name:"SITAB CI — Sté Ivoirienne de Tabac",sector:"Industrie",   country:"CI", price:21000.0,  var1d:1.4,  per:10.57, div:9.84, capMkt:191,  vol:242,   beta:0.65, per5y:11.0, notes:"Dividende élevé, secteur régulé" },
+  { ticker:"NEIC",  name:"NEI-CEDA CI",                       sector:"Industrie",    country:"CI", price:2000.0,   var1d:2.01, per:11.91, div:4.30, capMkt:19,   vol:1725,  beta:1.2,  per5y:13.0, notes:"Édition, faible capitalisation" },
+  { ticker:"CABC",  name:"SICABLE CI",                        sector:"Industrie",    country:"CI", price:3500.0,   var1d:-1.01,  per:15.22, div:3.05, capMkt:74,   vol:210,   beta:1.1,  per5y:16.0, notes:"Câblerie industrielle" },
+  { ticker:"STAC",  name:"SETAO CI",                          sector:"Industrie",    country:"CI", price:2815.0,   var1d:-6.57,  per:0.0,   div:2.12, capMkt:47,   vol:13320, beta:1.3,  per5y:0.0,  notes:"Très forte hausse du jour" },
+  { ticker:"SEMC",  name:"Eviosys Packaging SIEM CI",         sector:"Industrie",    country:"CI", price:1545.0,   var1d:6.79, per:35.22, div:0.99, capMkt:21,   vol:4828,  beta:1.2,  per5y:30.0, notes:"Emballage industriel" },
+  { ticker:"FTSC",  name:"FILTISAC CI",                       sector:"Industrie",    country:"CI", price:2340.0,   var1d:0.0,  per:1.74,  div:75.07,capMkt:46,   vol:665,   beta:0.9,  per5y:2.0,  notes:"Filtres industriels, rendement exceptionnel" },
+  { ticker:"SIVC",  name:"ERIUM CI (ex Air Liquide CI)",      sector:"Industrie",    country:"CI", price:2860.0,   var1d:-0.52,  per:0.0,   div:0.0,  capMkt:43,   vol:1098,  beta:1.0,  per5y:0.0,  notes:"Gaz industriels" },
+  { ticker:"UNLC",  name:"Unilever Côte d'Ivoire",            sector:"Industrie",    country:"CI", price:57005.0,  var1d:-4.64, per:0.0,   div:0.0,  capMkt:674,  vol:17,    beta:0.8,  per5y:0.0,  notes:"Biens de grande consommation, très peu liquide" },
+
+  // ── Distribution & Commerce ────────────────────────────────────────────────
+  { ticker:"CFAC",  name:"CFAO Motors CI",                    sector:"Distribution", country:"CI", price:1505.0,   var1d:-0.33,  per:57.39, div:0.47, capMkt:123,  vol:725,   beta:0.95, per5y:50.0, notes:"Distribution automobile" },
+  { ticker:"SDSC",  name:"Africa Global Logistics CI",        sector:"Distribution", country:"CI", price:1885.0,   var1d:3.72, per:4.37,  div:5.44, capMkt:28,   vol:1826,  beta:1.1,  per5y:5.0,  notes:"Logistique & transport" },
+  { ticker:"ABJC",  name:"Servair Abidjan CI",                sector:"Distribution", country:"CI", price:3250.0,   var1d:0.77,  per:23.61, div:7.16, capMkt:49,   vol:914,   beta:0.9,  per5y:24.0, notes:"Services aéroportuaires" },
+  { ticker:"BNBC",  name:"Bernabé CI",                        sector:"Distribution", country:"CI", price:1700.0,   var1d:6.76, per:443.71,div:10.03,capMkt:25,   vol:447,   beta:1.0,  per5y:300.0,notes:"Distribution BTP, PER anormal" },
+  { ticker:"PRSC",  name:"Tractafric Motors CI",              sector:"Distribution", country:"CI", price:4100.0,   var1d:-3.24,  per:19.33, div:4.08, capMkt:67,   vol:85,    beta:1.1,  per5y:20.0, notes:"Distribution engins et véhicules" },
+  { ticker:"UNXC",  name:"UNIWAX CI",                         sector:"Distribution", country:"CI", price:1790.0,   var1d:-0.56, per:0.0,   div:3.41, capMkt:27,   vol:5051,  beta:1.0,  per5y:0.0,  notes:"Textile, imprimés" },
+  { ticker:"LNBB",  name:"Loterie Nationale du Bénin",        sector:"Distribution", country:"BJ", price:3845.0,   var1d:0.12,  per:17.26, div:6.90, capMkt:48,   vol:306,   beta:0.9,  per5y:18.0, notes:"Jeux et loterie" },
+
+  // ── Énergie & Utilities ────────────────────────────────────────────────────
+  { ticker:"TTLC",  name:"TotalEnergies Marketing CI",        sector:"Energie",      country:"CI", price:2850.0,   var1d:0.0, per:19.89, div:6.82, capMkt:172,  vol:693,   beta:0.88, per5y:18.0, notes:"Distribution carburants CI — Prestige" },
+  { ticker:"TTLS",  name:"TotalEnergies Marketing SN",        sector:"Energie",      country:"SN", price:3360.0,   var1d:0.44,  per:15.38, div:6.95, capMkt:192,  vol:1726,  beta:0.85, per5y:14.5, notes:"Distribution carburants SN — Prestige" },
+  { ticker:"SHEC",  name:"Vivo Energy CI",                    sector:"Energie",      country:"CI", price:1915.0,   var1d:0.0, per:19.96, div:3.94, capMkt:114,  vol:1531,  beta:0.95, per5y:20.0, notes:"Distribution carburants ex-Shell CI" },
+  { ticker:"CIEC",  name:"CIE — Compagnie Ivoirienne d'Élec.",sector:"Energie",      country:"CI", price:4150.0,   var1d:1.19, per:17.11, div:3.95, capMkt:480,  vol:12278, beta:0.7,  per5y:18.0, notes:"Électricité concession — Services publics" },
+  { ticker:"SDCC",  name:"SODECI — Sté Dist. Eau CI",         sector:"Energie",      country:"CI", price:11025.0,  var1d:0.0,  per:16.99, div:3.17, capMkt:133,  vol:367,   beta:0.62, per5y:17.0, notes:"Eau potable, monopole régulé" },
+  { ticker:"SAFC",  name:"SAFCA CI",                          sector:"Energie",      country:"CI", price:3600.0,   var1d:0.0, per:0.0,   div:0.0,  capMkt:54,   vol:1988,  beta:1.0,  per5y:0.0,  notes:"Financement automobile" },
+];
+
+// ==================== CALCUL SCORE ====================
+function calcScore(s) {
+  let score = 0;
+  // 1. PER (30%) — PER bas = mieux
+  const perScore = s.per < 8 ? 30 : s.per < 12 ? 25 : s.per < 15 ? 18 : s.per < 20 ? 10 : 5;
+  // 2. Dividende (25%) — haut = mieux
+  const divScore = s.div > 8 ? 25 : s.div > 6 ? 20 : s.div > 4 ? 15 : s.div > 2 ? 8 : 4;
+  // 3. Momentum (20%) — variation positive
+  const momScore = s.var1d > 2 ? 20 : s.var1d > 1 ? 16 : s.var1d > 0 ? 12 : s.var1d > -1 ? 8 : 4;
+  // 4. Liquidité (15%) — volume échangé
+  const liqScore = s.vol > 1000 ? 15 : s.vol > 500 ? 12 : s.vol > 200 ? 8 : s.vol > 100 ? 5 : 3;
+  // 5. Fondamentaux (10%) — cap marché
+  const fundScore = s.capMkt > 500 ? 10 : s.capMkt > 200 ? 8 : s.capMkt > 100 ? 6 : 3;
+  score = perScore + divScore + momScore + liqScore + fundScore;
+  return { total: Math.min(score, 100), per: perScore, div: divScore, mom: momScore, liq: liqScore, fund: fundScore };
+}
+
+function getSignal(score) {
+  if (score >= 68) return { label: "ACHETER", cls: "badge-buy" };
+  if (score >= 48) return { label: "CONSERVER", cls: "badge-hold" };
+  return { label: "SURVEILLER", cls: "badge-sell" };
+}
+
+function scoreGrade(s) {
+  if (s >= 75) return "score-a";
+  if (s >= 55) return "score-b";
+  if (s >= 40) return "score-c";
+  return "score-d";
+}
+
+// ── Auto-chargement brvm_cours.json (GitHub Pages + serveur HTTP) ────────────
+// Fonctionne quand l'app est hébergée en ligne (fetch() bloqué sur file://)
+async function autoLoadCoursJson() {
+  // Tenter de charger depuis plusieurs emplacements possibles
+  const candidates = ['./brvm_cours.json', 'brvm_cours.json'];
+  for (const url of candidates) {
+    try {
+      const resp = await fetch(url, { cache: 'no-store' });
+      if (!resp.ok) continue;
+      const data = await resp.json();
+      if (!Array.isArray(data) || data.length === 0) continue;
+
+      let updated = 0;
+      data.forEach(row => {
+        const idx = stocks.findIndex(s => s.ticker === row.ticker);
+        if (idx !== -1 && row.price > 0) {
+          stocks[idx].price  = row.price;
+          stocks[idx].var1d  = row.var1d ?? 0;
+          updated++;
+        }
+      });
+
+      if (updated > 0) {
+        const src   = data[0]?.source || 'brvm_cours.json';
+        const dated = data[0]?.date   || '';
+        const label = `${src}${dated ? ' — ' + dated : ''}`;
+        localStorage.setItem("brvm_lastMaj",    new Date().toLocaleString("fr-FR"));
+        localStorage.setItem("brvm_lastSource", label);
+        console.log(`✅ Auto-chargement : ${updated} titres depuis ${url}`);
+
+        // Afficher la bannière verte
+        const banner = document.getElementById("autoUpdateBanner");
+        if (banner) banner.style.background = "linear-gradient(135deg,#064e3b,#059669)";
+        const statusEl = document.getElementById("autoUpdateStatus");
+        if (statusEl) statusEl.innerHTML =
+          `✅ <strong>${updated} titres</strong> chargés automatiquement — <em>${label}</em>`;
+        return true;
+      }
+    } catch (_) { /* fichier absent ou CORS — normal en local */ }
+  }
+  return false;
+}
+
+// ==================== INIT ====================
+window.onload = async function () {
+  // Afficher la date et la source de la dernière MAJ
+  const lastMaj    = localStorage.getItem("brvm_lastMaj");
+  const lastSource = localStorage.getItem("brvm_lastSource");
+  if (lastMaj && lastSource) {
+    document.getElementById("lastUpdate").textContent = `✅ ${lastSource}`;
+    document.getElementById("autoUpdateStatus").innerHTML =
+      `Dernière MAJ : <strong>${lastSource}</strong> le ${lastMaj}`;
+    document.getElementById("autoUpdateBanner").style.background =
+      "linear-gradient(135deg,#064e3b,#059669)";
+  } else {
+    document.getElementById("lastUpdate").textContent =
+      "✅ BOA Direct — 01/06/2026 à 16:26" + new Date().toLocaleDateString("fr-FR",
+        { day:"2-digit", month:"short", year:"numeric" });
+  }
+  renderStockTable();
+  renderDashboard();
+  renderScoring();
+  renderSimulator();
+  renderAllocSliders();
+  renderGuide();
+  renderPortfolio();
+  populateSelects();
+  calcSim();
+  calcComparison();
+  calcAlloc();
+  loadLastMaj();
+  seedHistory();
+  populateTASelects();
+
+  // Auto-chargement depuis brvm_cours.json (GitHub Pages / serveur HTTP)
+  // Si les prix sont mis à jour, on re-rend tout automatiquement
+  autoLoadCoursJson().then(updated => {
+    if (updated) {
+      seedHistory();
+      renderStockTable();
+      renderDashboard();
+      renderScoring();
+    }
+  });
+};
+
+// ==================== DASHBOARD ====================
+function renderDashboard() {
+  // Top performers
+  const sorted = [...stocks].sort((a,b) => calcScore(b).total - calcScore(a).total).slice(0,5);
+  const tp = document.getElementById("top-performers");
+  tp.innerHTML = sorted.map(s => {
+    const sc = calcScore(s).total;
+    const sig = getSignal(sc);
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div class="score-circle ${scoreGrade(sc)}" style="width:48px;height:48px;font-size:1rem">${sc}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:0.9rem">${s.ticker} <span class="badge badge-sector" style="font-size:0.7rem">${s.sector}</span></div>
+        <div style="font-size:0.78rem;color:var(--text-muted)">${s.name}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:700">${s.price.toLocaleString("fr")} F</div>
+        <span class="badge ${sig.cls}">${sig.label}</span>
+      </div>
+    </div>`;
+  }).join("");
+
+  // Sectors pie
+  const sectorMap = {};
+  stocks.forEach(s => { sectorMap[s.sector] = (sectorMap[s.sector] || 0) + s.capMkt; });
+  const colors = ["#3b82f6","#10b981","#f59e0b","#ef4444","#8b5cf6","#06b6d4","#ec4899"];
+  const entries = Object.entries(sectorMap).sort((a,b)=>b[1]-a[1]);
+  drawPie("pieChart", entries, colors);
+  const leg = document.getElementById("pieLegend");
+  const total = entries.reduce((s,e)=>s+e[1],0);
+  leg.innerHTML = entries.map((e,i) => `<div class="legend-item"><div class="legend-dot" style="background:${colors[i%colors.length]}"></div><span>${e[0]}: <strong>${((e[1]/total)*100).toFixed(0)}%</strong></span></div>`).join("");
+
+  // Sector bars
+  const bc = document.getElementById("sectorBars");
+  const max = Math.max(...entries.map(e=>e[1]));
+  bc.innerHTML = entries.map((e,i) => `<div class="bar" style="height:${(e[1]/max)*100}%;background:${colors[i%colors.length]}" title="${e[0]}: ${e[1].toFixed(0)} Md FCFA"></div>`).join("");
+  document.getElementById("sectorLabels").innerHTML = entries.map((e,i) => `<div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:${colors[i%colors.length]}"></div><span style="font-size:0.72rem;color:var(--text-muted)">${e[0]}</span></div>`).join("");
+
+  // News simulées
+  const news = [
+    { icon:"📣", text:"Sonatel annonce une hausse de son dividende pour 2025", tag:"Finance", color:"#10b981" },
+    { icon:"⚡", text:"CIE renouvelle sa concession jusqu'en 2030", tag:"Énergie", color:"#f59e0b" },
+    { icon:"🌴", text:"PALMCI : production en hausse de 12% sur l'exercice", tag:"Agriculture", color:"#3b82f6" },
+    { icon:"🏦", text:"Ecobank CI ouvre 15 nouveaux points de service", tag:"Finance", color:"#10b981" },
+    { icon:"📱", text:"Orange CI dépasse 12M d'abonnés mobile money", tag:"Telecom", color:"#8b5cf6" },
+  ];
+  document.getElementById("newsBox").innerHTML = news.map(n => `<div style="display:flex;align-items:start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-size:1.2rem">${n.icon}</span><div><div style="font-size:0.82rem;font-weight:600">${n.text}</div><span style="font-size:0.72rem;color:${n.color};font-weight:700">${n.tag}</span></div></div>`).join("");
+}
+
+// ==================== PIE CHART ====================
+function drawPie(canvasId, entries, colors) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const total = entries.reduce((s,e)=>s+e[1],0);
+  let start = -Math.PI/2;
+  ctx.clearRect(0,0,160,160);
+  entries.forEach((e,i) => {
+    const angle = (e[1]/total) * 2 * Math.PI;
+    ctx.beginPath(); ctx.moveTo(80,80);
+    ctx.arc(80,80,72,start,start+angle);
+    ctx.closePath(); ctx.fillStyle = colors[i%colors.length]; ctx.fill();
+    ctx.strokeStyle = "white"; ctx.lineWidth = 2; ctx.stroke();
+    start += angle;
+  });
+  // Centre
+  ctx.beginPath(); ctx.arc(80,80,30,0,2*Math.PI);
+  ctx.fillStyle = "white"; ctx.fill();
+  ctx.fillStyle = "#1e293b"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText("BRVM", 80, 78); ctx.font = "10px sans-serif"; ctx.fillText(`${entries.length} sec.`, 80, 92);
+}
+
+// ==================== STOCK TABLE ====================
+function renderStockTable() {
+  const tbody = document.getElementById("stockTableBody");
+  tbody.innerHTML = stocks.map((s,i) => {
+    const sc = calcScore(s);
+    const sig = getSignal(sc.total);
+    const varColor = s.var1d >= 0 ? "var(--success)" : "var(--danger)";
+    return `<tr>
+      <td><span class="ticker">${s.ticker}</span></td>
+      <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${s.name}">${s.name}</td>
+      <td><span class="badge badge-sector">${s.sector}</span></td>
+      <td style="font-weight:700">${s.price.toLocaleString("fr")}</td>
+      <td style="color:${varColor};font-weight:700">${s.var1d >= 0 ? "+" : ""}${s.var1d}%</td>
+      <td>${s.per}</td>
+      <td style="font-weight:600;color:var(--success)">${s.div}%</td>
+      <td>${s.capMkt} Md</td>
+      <td>
+        <div class="score-circle ${scoreGrade(sc.total)}" style="width:40px;height:40px;font-size:0.85rem;display:inline-flex">${sc.total}</div>
+      </td>
+      <td><span class="badge ${sig.cls}">${sig.label}</span></td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="openDetail(${i})">Détail</button>
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+function filterTable() {
+  const q = document.getElementById("searchInput").value.toLowerCase();
+  const sector = document.getElementById("sectorFilter").value;
+  const signal = document.getElementById("signalFilter").value;
+  const rows = document.querySelectorAll("#stockTableBody tr");
+  stocks.forEach((s,i) => {
+    const sc = calcScore(s).total;
+    const sig = getSignal(sc).label;
+    const match = (!q || s.ticker.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)) &&
+                  (!sector || s.sector === sector) &&
+                  (!signal || sig === signal);
+    rows[i].style.display = match ? "" : "none";
+  });
+}
+
+function openDetail(i) {
+  document.getElementById("scoreSelect").value = i;
+  showSection("scoring");
+  showScoreDetail();
+}
+
+// ==================== SCORING ====================
+function renderScoring() {
+  // Populate select
+  const sel = document.getElementById("scoreSelect");
+  stocks.forEach((s,i) => {
+    const opt = document.createElement("option");
+    opt.value = i; opt.textContent = `${s.ticker} — ${s.name}`;
+    sel.appendChild(opt);
+  });
+
+  // Alertes
+  const buy = stocks.filter(s => calcScore(s).total >= 68).sort((a,b) => calcScore(b).total - calcScore(a).total);
+  const sell = stocks.filter(s => calcScore(s).total < 45);
+  const ab = document.getElementById("alertsBox");
+  let html = "";
+  buy.slice(0,3).forEach(s => {
+    const sc = calcScore(s).total;
+    html += `<div class="alert-card alert-buy"><span class="alert-icon">✅</span><div class="alert-text"><h4>${s.ticker} — Opportunité d'achat (Score: ${sc}/100)</h4><p>${s.name} • PER: ${s.per} • Dividende: ${s.div}% • ${s.notes}</p></div></div>`;
+  });
+  sell.slice(0,2).forEach(s => {
+    const sc = calcScore(s).total;
+    html += `<div class="alert-card alert-sell"><span class="alert-icon">⚠️</span><div class="alert-text"><h4>${s.ticker} — Score faible (${sc}/100) — Surveillance recommandée</h4><p>${s.name} • Momentum négatif ou PER élevé</p></div></div>`;
+  });
+  html += `<div class="alert-card alert-info"><span class="alert-icon">ℹ️</span><div class="alert-text"><h4>Rappel : Les alertes sont basées sur des données de référence</h4><p>Mettez à jour les cours depuis le site officiel <strong>brvm.org</strong> ou votre SGI pour des alertes en temps réel.</p></div></div>`;
+  ab.innerHTML = html;
+}
+
+function showScoreDetail() {
+  const i = document.getElementById("scoreSelect").value;
+  if (i === "") { document.getElementById("scoreDetail").innerHTML = ""; return; }
+  const s = stocks[i];
+  const sc = calcScore(s);
+  const sig = getSignal(sc.total);
+  const colors = { per:"#3b82f6", div:"#10b981", mom:"#f59e0b", liq:"#8b5cf6", fund:"#ef4444" };
+  const items = [
+    { label:"Valorisation (PER)", val:sc.per, max:30, color:colors.per },
+    { label:"Rendement Dividende", val:sc.div, max:25, color:colors.div },
+    { label:"Momentum (variation)", val:sc.mom, max:20, color:colors.mom },
+    { label:"Liquidité (volume)", val:sc.liq, max:15, color:colors.liq },
+    { label:"Fondamentaux (cap.)", val:sc.fund, max:10, color:colors.fund },
+  ];
+  document.getElementById("scoreDetail").innerHTML = `
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+      <div class="score-circle ${scoreGrade(sc.total)}" style="width:80px;height:80px;font-size:1.8rem">${sc.total}</div>
+      <div>
+        <div style="font-size:1.1rem;font-weight:800">${s.ticker}</div>
+        <div style="font-size:0.82rem;color:var(--text-muted)">${s.name}</div>
+        <span class="badge ${sig.cls}" style="margin-top:6px">${sig.label}</span>
+      </div>
+    </div>
+    <div style="margin-bottom:14px">
+      ${items.map(it => `
+        <div class="score-bar-wrap">
+          <label>${it.label}</label>
+          <div class="score-bar"><div class="score-bar-fill" style="width:${(it.val/it.max)*100}%;background:${it.color}"></div></div>
+          <span class="score-bar-val" style="color:${it.color}">${it.val}/${it.max}</span>
+        </div>`).join("")}
+    </div>
+    <div style="background:#f8faff;border-radius:8px;padding:12px;font-size:0.82rem">
+      <div><strong>Cours :</strong> ${s.price.toLocaleString("fr")} FCFA | <strong>Variation :</strong> ${s.var1d}% | <strong>PER :</strong> ${s.per}</div>
+      <div style="margin-top:4px"><strong>Dividende :</strong> ${s.div}% | <strong>Cap. Marché :</strong> ${s.capMkt} Md FCFA</div>
+      <div style="margin-top:4px;color:var(--text-muted)">💬 ${s.notes}</div>
+    </div>`;
+}
+
+// ==================== PORTEFEUILLE ====================
+let portfolio = JSON.parse(localStorage.getItem("brvm_portfolio") || "[]");
+
+function populateSelects() {
+  ["pfStock","simStock","scoreSelect"].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    stocks.forEach((s,i) => {
+      if (id === "scoreSelect" && el.options.length > 0) return; // already done
+      const opt = document.createElement("option");
+      opt.value = id === "simStock" ? i : i;
+      opt.textContent = `${s.ticker} — ${s.name}`;
+      el.appendChild(opt);
+    });
+  });
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("pfDate").value = today;
+}
+
+function addPosition() {
+  const si = parseInt(document.getElementById("pfStock").value);
+  const qty = parseInt(document.getElementById("pfQty").value);
+  const price = parseFloat(document.getElementById("pfPrice").value);
+  const date = document.getElementById("pfDate").value;
+  if (isNaN(si) || isNaN(qty) || isNaN(price)) { alert("Veuillez remplir tous les champs."); return; }
+  const s = stocks[si];
+  portfolio.push({ ticker: s.ticker, name: s.name, sector: s.sector, stockIdx: si, qty, price, date });
+  localStorage.setItem("brvm_portfolio", JSON.stringify(portfolio));
+  document.getElementById("addModal").classList.remove("open");
+  renderPortfolio();
+}
+
+function removePosition(idx) {
+  if (confirm("Supprimer cette position ?")) {
+    portfolio.splice(idx, 1);
+    localStorage.setItem("brvm_portfolio", JSON.stringify(portfolio));
+    renderPortfolio();
+  }
+}
+
+function renderPortfolio() {
+  const tbody = document.getElementById("pfTableBody");
+  if (portfolio.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text-muted)">Aucune position — Cliquez sur "+ Ajouter une Position"</td></tr>`;
+    updatePfSummary(0, 0, 0, 0);
+    return;
+  }
+  let totalInvest = 0, totalValue = 0;
+  const rows = portfolio.map((p, idx) => {
+    const currentPrice = stocks[p.stockIdx]?.price || p.price;
+    const invested = p.qty * p.price;
+    const currentVal = p.qty * currentPrice;
+    const pnl = currentVal - invested;
+    const pnlPct = ((currentVal - invested) / invested) * 100;
+    totalInvest += invested; totalValue += currentVal;
+    const pnlColor = pnl >= 0 ? "var(--success)" : "var(--danger)";
+    return `<tr>
+      <td><span class="ticker">${p.ticker}</span></td>
+      <td style="font-size:0.82rem">${p.name.substring(0,24)}...</td>
+      <td>${p.qty}</td>
+      <td>${p.price.toLocaleString("fr")}</td>
+      <td style="font-weight:700">${currentPrice.toLocaleString("fr")}</td>
+      <td style="font-weight:700">${currentVal.toLocaleString("fr", {maximumFractionDigits:0})}</td>
+      <td style="color:${pnlColor};font-weight:700">${pnl >= 0 ? "+" : ""}${pnl.toLocaleString("fr", {maximumFractionDigits:0})}</td>
+      <td style="color:${pnlColor};font-weight:700">${pnl >= 0 ? "+" : ""}${pnlPct.toFixed(1)}%</td>
+      <td id="weight-${idx}">-</td>
+      <td><button class="btn btn-danger btn-sm" onclick="removePosition(${idx})">✕</button></td>
+    </tr>`;
+  });
+  tbody.innerHTML = rows.join("");
+  // Update weights
+  portfolio.forEach((p, idx) => {
+    const currentVal = p.qty * (stocks[p.stockIdx]?.price || p.price);
+    const w = document.getElementById(`weight-${idx}`);
+    if (w) w.textContent = ((currentVal / totalValue) * 100).toFixed(1) + "%";
+  });
+
+  const totalPnl = totalValue - totalInvest;
+  updatePfSummary(totalInvest, totalValue, totalPnl, portfolio.length);
+  renderPfCharts(totalValue);
+}
+
+function updatePfSummary(invest, value, pnl, n) {
+  const pnlColor = pnl >= 0 ? "var(--success)" : "var(--danger)";
+  const pnlPct = invest > 0 ? ((pnl / invest) * 100).toFixed(1) : 0;
+  document.getElementById("pfSummary").innerHTML = `
+    <div class="pf-stat"><div class="pf-label">Capital Investi</div><div class="pf-val">${(invest/1000000).toFixed(1)} M</div><div style="font-size:0.75rem;color:var(--text-muted)">FCFA</div></div>
+    <div class="pf-stat"><div class="pf-label">Valeur Actuelle</div><div class="pf-val" style="color:var(--primary)">${(value/1000000).toFixed(1)} M</div><div style="font-size:0.75rem;color:var(--text-muted)">FCFA</div></div>
+    <div class="pf-stat"><div class="pf-label">Plus / Moins-value</div><div class="pf-val" style="color:${pnlColor}">${pnl >= 0 ? "+" : ""}${(pnl/1000000).toFixed(2)} M</div><div style="font-size:0.75rem;color:${pnlColor}">${pnl >= 0 ? "+" : ""}${pnlPct}%</div></div>
+    <div class="pf-stat"><div class="pf-label">Nb Positions</div><div class="pf-val">${n}</div><div style="font-size:0.75rem;color:var(--text-muted)">titres</div></div>`;
+}
+
+function renderPfCharts(totalValue) {
+  if (portfolio.length === 0) return;
+  const colors = ["#3b82f6","#10b981","#f59e0b","#ef4444","#8b5cf6","#06b6d4","#ec4899","#84cc16"];
+  // Diversification pie
+  const entries = portfolio.map((p,i) => {
+    const v = p.qty * (stocks[p.stockIdx]?.price || p.price);
+    return [p.ticker, v];
+  });
+  drawPie("pfPieChart", entries, colors);
+  document.getElementById("pfPieLegend").innerHTML = entries.map((e,i) => `<div class="legend-item"><div class="legend-dot" style="background:${colors[i%colors.length]}"></div><span>${e[0]}: <strong>${((e[1]/totalValue)*100).toFixed(1)}%</strong></span></div>`).join("");
+
+  // P&L bars
+  const bc = document.getElementById("pfBars");
+  const pnls = portfolio.map(p => {
+    const cv = p.qty * (stocks[p.stockIdx]?.price || p.price);
+    const iv = p.qty * p.price;
+    return { ticker: p.ticker, pnl: cv - iv };
+  });
+  const maxAbs = Math.max(...pnls.map(p => Math.abs(p.pnl)), 1);
+  bc.style.height = "140px";
+  bc.innerHTML = pnls.map((p,i) => {
+    const h = (Math.abs(p.pnl) / maxAbs) * 90;
+    const col = p.pnl >= 0 ? "var(--success)" : "var(--danger)";
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%">
+      <div style="height:${h}%;min-height:4px;width:100%;background:${col};border-radius:4px 4px 0 0;cursor:pointer" title="${p.ticker}: ${p.pnl > 0 ? "+" : ""}${p.pnl.toLocaleString("fr",{maximumFractionDigits:0})} FCFA"></div>
+      <div style="font-size:0.65rem;text-align:center;margin-top:4px;color:var(--text-muted)">${p.ticker}</div>
+    </div>`;
+  }).join("");
+  document.getElementById("pfBarLabels").innerHTML = "";
+}
+
+// ==================== SIMULATEUR ====================
+function renderSimulator() {
+  const sel = document.getElementById("simStock");
+  stocks.forEach((s,i) => {
+    const opt = document.createElement("option"); opt.value = i; opt.textContent = `${s.ticker} — ${s.name}`;
+    sel.appendChild(opt);
+  });
+}
+
+document.addEventListener("change", e => {
+  if (e.target.id === "simScenario") {
+    document.getElementById("customRate").style.display = e.target.value === "custom" ? "block" : "none";
+    calcSim();
+  }
+});
+
+function calcSim() {
+  const amount = parseFloat(document.getElementById("simAmount").value) || 500000;
+  const years = parseFloat(document.getElementById("simYears").value) || 5;
+  const scenario = document.getElementById("simScenario").value;
+  const si = document.getElementById("simStock").value;
+  let rate = { pessimiste: -2, base: 8, optimiste: 15, custom: parseFloat(document.getElementById("simCustomRate")?.value||10) }[scenario] / 100;
+  const divYield = si !== "" ? stocks[parseInt(si)].div / 100 : 0.06;
+  const totalRate = rate + divYield;
+  const finalVal = amount * Math.pow(1 + totalRate, years);
+  const gain = finalVal - amount;
+  const gainPct = (gain / amount) * 100;
+  const divIncome = amount * divYield * years;
+
+  document.getElementById("simResult").innerHTML = `
+    <div style="font-size:0.9rem;opacity:0.85;margin-bottom:8px">Valeur finale estimée après ${years} an${years > 1 ? "s" : ""}</div>
+    <div class="big-num">${finalVal.toLocaleString("fr", {maximumFractionDigits:0})} FCFA</div>
+    <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;font-size:0.82rem">
+      <div><div style="opacity:0.7">Capital investi</div><div style="font-weight:700">${amount.toLocaleString("fr")} F</div></div>
+      <div><div style="opacity:0.7">Gain total</div><div style="font-weight:700;color:${gain>=0?"#86efac":"#fca5a5"}">${gain>=0?"+":""}${gain.toLocaleString("fr",{maximumFractionDigits:0})} F</div></div>
+      <div><div style="opacity:0.7">Rendement global</div><div style="font-weight:700;color:${gain>=0?"#86efac":"#fca5a5"}">${gainPct>=0?"+":""}${gainPct.toFixed(1)}%</div></div>
+    </div>
+    <div style="margin-top:10px;font-size:0.78rem;opacity:0.7">Taux appliqué: ${(totalRate*100).toFixed(1)}%/an (${(rate*100).toFixed(1)}% prix + ${(divYield*100).toFixed(1)}% dividende)</div>`;
+}
+
+function calcComparison() {
+  const cap = parseFloat(document.getElementById("compCapital").value) || 1000000;
+  const y = parseFloat(document.getElementById("compYears").value) || 10;
+  const strategies = [
+    { name:"🏦 BRVM Actions Qualité", rate:0.10, div:0.06, color:"#3b82f6" },
+    { name:"📊 BRVM Marché Moyen", rate:0.06, div:0.04, color:"#10b981" },
+    { name:"💰 Livret Bancaire UEMOA", rate:0.035, div:0, color:"#f59e0b" },
+    { name:"🏢 Obligations BCEAO", rate:0.06, div:0, color:"#8b5cf6" },
+  ];
+  const res = document.getElementById("compResult");
+  res.innerHTML = strategies.map(s => {
+    const r = s.rate + s.div;
+    const fv = cap * Math.pow(1 + r, y);
+    const g = fv - cap;
+    const w = (g / (strategies[0].rate + strategies[0].div)) / y * 100;
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:0.85rem;font-weight:600">${s.name}</span>
+        <span style="font-weight:800;font-size:0.9rem">${fv.toLocaleString("fr",{maximumFractionDigits:0})} F</span>
+      </div>
+      <div class="progress"><div class="progress-bar" style="width:${Math.min((fv/cap-1)*10,100)}%;background:${s.color}"></div></div>
+      <div style="font-size:0.75rem;color:var(--text-muted)">+${g.toLocaleString("fr",{maximumFractionDigits:0})} FCFA — Taux: ${(r*100).toFixed(1)}%/an</div>
+    </div>`;
+  }).join("");
+}
+
+// ==================== ALLOCATION SIMULATEUR ====================
+const allocSectors = [
+  { name:"Finance / Banques", avg_rate:0.09, avg_div:0.05, color:"#3b82f6" },
+  { name:"Télécommunications", avg_rate:0.07, avg_div:0.075, color:"#10b981" },
+  { name:"Énergie & Utilities", avg_rate:0.06, avg_div:0.06, color:"#f59e0b" },
+  { name:"Agriculture", avg_rate:0.10, avg_div:0.055, color:"#ef4444" },
+  { name:"Industrie", avg_rate:0.05, avg_div:0.04, color:"#8b5cf6" },
+];
+
+function renderAllocSliders() {
+  let defaults = [30, 25, 20, 15, 10];
+  document.getElementById("allocSliders").innerHTML = allocSectors.map((s,i) => `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <label style="font-size:0.85rem;font-weight:600">${s.name}</label>
+        <span id="alloc-pct-${i}" style="font-size:0.9rem;font-weight:800;color:${s.color}">${defaults[i]}%</span>
+      </div>
+      <input type="range" class="sim-slider" min="0" max="100" value="${defaults[i]}" id="alloc-slider-${i}" oninput="updateAlloc(${i}, this.value)">
+    </div>`).join("");
+  calcAlloc();
+}
+
+function updateAlloc(idx, val) {
+  document.getElementById(`alloc-pct-${idx}`).textContent = val + "%";
+  calcAlloc();
+}
+
+function calcAlloc() {
+  const capital = parseFloat(document.getElementById("allocCapital").value) || 2000000;
+  const pcts = allocSectors.map((s,i) => parseFloat(document.getElementById(`alloc-slider-${i}`)?.value || 0));
+  const total = pcts.reduce((a,b)=>a+b,0);
+  const weightedRate = allocSectors.reduce((acc, s, i) => acc + ((pcts[i]/Math.max(total,1)) * (s.avg_rate + s.avg_div)), 0);
+  const projected1 = capital * (1 + weightedRate);
+  const projected5 = capital * Math.pow(1 + weightedRate, 5);
+  const proj10 = capital * Math.pow(1 + weightedRate, 10);
+
+  document.getElementById("allocResult").innerHTML = `
+    <div style="background:linear-gradient(135deg,#1a3c6e,#2a5298);color:white;border-radius:12px;padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px">
+      <div style="text-align:center"><div style="font-size:0.8rem;opacity:0.75">Rendement attendu/an</div><div style="font-size:1.8rem;font-weight:900;color:var(--accent)">${(weightedRate*100).toFixed(1)}%</div></div>
+      <div style="text-align:center"><div style="font-size:0.8rem;opacity:0.75">Valeur 1 an</div><div style="font-size:1.3rem;font-weight:700">${projected1.toLocaleString("fr",{maximumFractionDigits:0})}</div></div>
+      <div style="text-align:center"><div style="font-size:0.8rem;opacity:0.75">Valeur 5 ans</div><div style="font-size:1.3rem;font-weight:700">${projected5.toLocaleString("fr",{maximumFractionDigits:0})}</div></div>
+      <div style="text-align:center"><div style="font-size:0.8rem;opacity:0.75">Valeur 10 ans</div><div style="font-size:1.3rem;font-weight:700">${proj10.toLocaleString("fr",{maximumFractionDigits:0})}</div></div>
+      <div style="text-align:center"><div style="font-size:0.8rem;opacity:0.75">Allocation totale</div><div style="font-size:1.3rem;font-weight:700;color:${total === 100 ? "#86efac" : "#fca5a5"}">${total}%</div><div style="font-size:0.7rem;opacity:0.7">${total === 100 ? "✅ Équilibrée" : "⚠️ Ajustez à 100%"}</div></div>
+    </div>`;
+}
+
+// ==================== GUIDE ====================
+function renderGuide() {
+  // Glossaire
+  const glossary = [
+    { q:"PER — Price Earning Ratio", a:"Le rapport entre le cours de l'action et le bénéfice par action. Un PER de 10 signifie que vous payez 10 fois les bénéfices annuels. À la BRVM, un PER < 10 est considéré attractif." },
+    { q:"Dividende & Rendement", a:"Le dividende est la part du bénéfice distribuée aux actionnaires. Le rendement = (dividende / cours) × 100. À la BRVM, les meilleures sociétés offrent 5-9%." },
+    { q:"Capitalisation Boursière", a:"Valeur totale de l'entreprise en bourse = cours × nombre d'actions. Plus elle est élevée, plus l'action est liquide et stable (moins risquée)." },
+    { q:"SGI — Société de Gestion & Intermédiation", a:"Intermédiaire obligatoire pour passer des ordres à la BRVM. C'est l'équivalent d'un courtier. Vous devez ouvrir un compte titres auprès d'une SGI agréée." },
+    { q:"Liquidité d'un titre", a:"La facilité à acheter ou vendre une action. Un titre avec peu de transactions peut être difficile à revendre. Privilégiez les titres avec un volume quotidien élevé." },
+    { q:"Ordre d'achat / vente", a:"À cours limité : vous fixez le prix maximum que vous acceptez de payer. À cours du marché : vous achetez au meilleur prix disponible immédiatement." },
+    { q:"Plus-value & Moins-value", a:"La différence entre votre prix de revente et votre prix d'achat. Positive = gain (plus-value). Négative = perte (moins-value)." },
+  ];
+  document.getElementById("glossaryBox").innerHTML = glossary.map(g => `
+    <div class="glossary-item" onclick="this.classList.toggle('open')">
+      <div class="glossary-q">${g.q} <span>▼</span></div>
+      <div class="glossary-a">${g.a}</div>
+    </div>`).join("");
+
+  // Règles d'or
+  const rules = [
+    { icon:"🎯", title:"Investissez sur le long terme", text:"La BRVM récompense la patience. Visez un horizon de 3-5 ans minimum pour lisser la volatilité." },
+    { icon:"🗂️", title:"Diversifiez votre portefeuille", text:"Répartissez entre 5-8 titres de secteurs différents. Jamais plus de 25% du capital dans un seul titre." },
+    { icon:"💵", title:"Choisissez des payeurs de dividendes", text:"Les sociétés qui paient régulièrement des dividendes sont généralement plus solides et vous apportent un revenu passif." },
+    { icon:"📊", title:"Analysez les fondamentaux", text:"Regardez le PER, la croissance du bénéfice, et la santé financière avant d'acheter. Le score de cette app vous y aide." },
+    { icon:"🚫", title:"N'investissez jamais l'argent dont vous avez besoin", text:"La bourse est pour l'épargne à long terme. Gardez toujours une réserve de liquidités pour vos besoins immédiats." },
+  ];
+  document.getElementById("rulesBox").innerHTML = rules.map(r => `
+    <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:1.5rem">${r.icon}</span>
+      <div><div style="font-weight:700;font-size:0.88rem">${r.title}</div><div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px">${r.text}</div></div>
+    </div>`).join("");
+
+  // SGI
+  const sgis = [
+    { name:"Hudson & Cie", pays:"CI", site:"hudson-ci.com" },
+    { name:"Coris Bourse", pays:"BF", site:"corisbourse.com" },
+    { name:"BICI Bourse", pays:"CI", site:"biciabidjan.net" },
+    { name:"Atlantique Finance", pays:"CI", site:"atlantiquefinance.com" },
+    { name:"SIB Finance", pays:"CI", site:"sib.ci" },
+    { name:"EDC Investment", pays:"GH/CI", site:"edcinvestment.com" },
+    { name:"NSIA Finance", pays:"CI", site:"nsiabourse.com" },
+    { name:"Ecobank Bourse", pays:"Regional", site:"ecobank.com" },
+  ];
+  document.getElementById("sgiBox").innerHTML = sgis.map(s => `
+    <div style="background:#f8faff;border-radius:8px;padding:12px;border:1px solid var(--border)">
+      <div style="font-weight:700">${s.name}</div>
+      <div style="font-size:0.78rem;color:var(--text-muted)">${s.pays} · ${s.site}</div>
+    </div>`).join("");
+}
+
+// ==================== HISTORISATION ====================
+const HISTORY_KEY = "brvm_history_v2";
+let priceHistory = JSON.parse(localStorage.getItem(HISTORY_KEY) || "{}");
+
+function seedHistory() {
+  // Génère 252 jours (1 an) de données simulées si absent
+  stocks.forEach(s => {
+    if (priceHistory[s.ticker] && priceHistory[s.ticker].length >= 50) return;
+    const hist = [];
+    let price = s.price * 0.85;
+    const today = new Date();
+    const vol = 0.012 + Math.random() * 0.008;
+    let day = 0;
+    for (let i = 252; i >= 0; i--) {
+      const d = new Date(today); d.setDate(d.getDate() - i);
+      if (d.getDay() === 0 || d.getDay() === 6) continue;
+      const ret = (Math.random() - 0.474) * vol * 2;
+      price = Math.max(price * (1 + ret), 10);
+      hist.push({
+        date: d.toISOString().split("T")[0],
+        close: Math.round(price),
+        volume: Math.round(300 + Math.random() * s.vol),
+        var: Math.round(ret * 1000) / 10
+      });
+      day++;
+    }
+    // Ajuster pour que le dernier point corresponde au cours actuel
+    const scale = s.price / hist[hist.length - 1].close;
+    hist.forEach(h => { h.close = Math.round(h.close * scale); });
+    hist[hist.length - 1].close = s.price;
+    priceHistory[s.ticker] = hist;
+  });
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(priceHistory));
+}
+
+function saveToHistory() {
+  const today = new Date().toISOString().split("T")[0];
+  stocks.forEach(s => {
+    if (!priceHistory[s.ticker]) priceHistory[s.ticker] = [];
+    const hist = priceHistory[s.ticker];
+    const last = hist[hist.length - 1];
+    if (!last || last.date !== today) {
+      hist.push({ date: today, close: s.price, volume: s.vol, var: s.var1d });
+      if (hist.length > 500) hist.shift();
+    } else {
+      last.close = s.price; last.var = s.var1d;
+    }
+  });
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(priceHistory));
+}
+
+function getHistory(ticker, days = 252) {
+  return (priceHistory[ticker] || []).slice(-days);
+}
+
+// ==================== INDICATEURS TECHNIQUES ====================
+function calcSMA(data, n) {
+  return data.map((_, i) => i < n - 1 ? null : data.slice(i - n + 1, i + 1).reduce((a, b) => a + b, 0) / n);
+}
+
+function calcEMA(data, n) {
+  const k = 2 / (n + 1); const res = new Array(data.length).fill(null);
+  let sum = 0; let start = -1;
+  for (let i = 0; i < data.length; i++) {
+    if (data[i] === null) continue;
+    if (start === -1) { sum += data[i]; if (i >= n - 1) { res[i] = sum / n; start = i; } }
+    else { res[i] = data[i] * k + res[i - 1] * (1 - k); }
+  }
+  return res;
+}
+
+function calcRSI(closes, n = 14) {
+  const res = new Array(closes.length).fill(null);
+  if (closes.length < n + 1) return res;
+  let ag = 0, al = 0;
+  for (let i = 1; i <= n; i++) {
+    const d = closes[i] - closes[i - 1];
+    if (d > 0) ag += d; else al -= d;
+  }
+  ag /= n; al /= n;
+  res[n] = 100 - 100 / (1 + ag / (al || 0.001));
+  for (let i = n + 1; i < closes.length; i++) {
+    const d = closes[i] - closes[i - 1];
+    const g = d > 0 ? d : 0; const l = d < 0 ? -d : 0;
+    ag = (ag * (n - 1) + g) / n; al = (al * (n - 1) + l) / n;
+    res[i] = 100 - 100 / (1 + ag / (al || 0.001));
+  }
+  return res;
+}
+
+function calcMACD(closes) {
+  const e12 = calcEMA(closes, 12);
+  const e26 = calcEMA(closes, 26);
+  const macd = closes.map((_, i) => e12[i] !== null && e26[i] !== null ? e12[i] - e26[i] : null);
+  const filled = macd.map(v => v ?? 0);
+  const signalFull = calcEMA(filled, 9);
+  const signal = macd.map((v, i) => v !== null ? signalFull[i] : null);
+  const histogram = macd.map((v, i) => v !== null && signal[i] !== null ? v - signal[i] : null);
+  return { macd, signal, histogram };
+}
+
+function calcBollinger(closes, n = 20, mult = 2) {
+  const sma = calcSMA(closes, n);
+  const upper = [], lower = [];
+  for (let i = 0; i < closes.length; i++) {
+    if (sma[i] === null) { upper.push(null); lower.push(null); continue; }
+    const sl = closes.slice(i - n + 1, i + 1);
+    const std = Math.sqrt(sl.reduce((acc, v) => acc + (v - sma[i]) ** 2, 0) / n);
+    upper.push(sma[i] + mult * std); lower.push(sma[i] - mult * std);
+  }
+  return { upper, middle: sma, lower };
+}
+
+function calcVolatility(closes) {
+  if (closes.length < 2) return 0.015;
+  const ret = [];
+  for (let i = 1; i < closes.length; i++) ret.push(Math.log(closes[i] / closes[i - 1]));
+  const mean = ret.reduce((a, b) => a + b, 0) / ret.length;
+  return Math.sqrt(ret.reduce((acc, r) => acc + (r - mean) ** 2, 0) / ret.length);
+}
+
+function findSR(closes, n = 5) {
+  const supports = [], resistances = [];
+  for (let i = n; i < closes.length - n; i++) {
+    const win = closes.slice(i - n, i + n + 1);
+    if (closes[i] === Math.min(...win)) supports.push(closes[i]);
+    if (closes[i] === Math.max(...win)) resistances.push(closes[i]);
+  }
+  const current = closes[closes.length - 1];
+  const sup = supports.filter(v => v < current).sort((a, b) => b - a).slice(0, 3);
+  const res = resistances.filter(v => v > current).sort((a, b) => a - b).slice(0, 3);
+  return { supports: sup, resistances: res };
+}
+
+// ==================== MOTEUR DE PRÉDICTION ====================
+function analyzeStock(ticker) {
+  const hist = getHistory(ticker, 252);
+  const stock = stocks.find(s => s.ticker === ticker);
+  if (!stock || hist.length < 30) return { error: true, msg: "Données insuffisantes (min 30 séances)" };
+  const closes = hist.map(h => h.close);
+  const L = closes.length - 1;
+  const rsi = calcRSI(closes, 14);
+  const { macd, signal: ms, histogram } = calcMACD(closes);
+  const boll = calcBollinger(closes, 20);
+  const sma20 = calcSMA(closes, 20);
+  const sma50 = calcSMA(closes, 50);
+  const sma5 = calcSMA(closes, 5);
+  const cp = closes[L];
+  const cRSI = rsi[L]; const cMACD = macd[L]; const cSig = ms[L];
+  const cUp = boll.upper[L]; const cLo = boll.lower[L]; const cMid = boll.middle[L];
+  const c20 = sma20[L]; const c50 = sma50[L]; const c5 = sma5[L];
+
+  const signals = []; let bull = 0, bear = 0;
+
+  // RSI
+  if (cRSI !== null) {
+    if (cRSI < 25) { signals.push({ n:"RSI Survendu (<25)", dir:"bull", pts:4, desc:`RSI=${cRSI.toFixed(1)} → Zone de survente extrême — rebond très probable` }); bull += 4; }
+    else if (cRSI < 35) { signals.push({ n:"RSI Faible (<35)", dir:"bull", pts:2, desc:`RSI=${cRSI.toFixed(1)} → Pression vendeuse — accumulation possible` }); bull += 2; }
+    else if (cRSI > 75) { signals.push({ n:"RSI Suracheté (>75)", dir:"bear", pts:4, desc:`RSI=${cRSI.toFixed(1)} → Zone de surachat extrême — correction probable` }); bear += 4; }
+    else if (cRSI > 65) { signals.push({ n:"RSI Élevé (>65)", dir:"bear", pts:2, desc:`RSI=${cRSI.toFixed(1)} → Pression acheteuse — prudence` }); bear += 2; }
+    else signals.push({ n:"RSI Neutre", dir:"neutral", pts:0, desc:`RSI=${cRSI !== null ? cRSI.toFixed(1) : "N/A"} — Zone neutre` });
+  }
+
+  // MACD
+  if (cMACD !== null && cSig !== null) {
+    const pm = macd[L - 1], ps = ms[L - 1];
+    if (pm !== null && cMACD > cSig && pm <= ps) { signals.push({ n:"Croisement MACD Haussier ✨", dir:"bull", pts:4, desc:"MACD vient de croiser au-dessus du signal — signal d'achat fort" }); bull += 4; }
+    else if (pm !== null && cMACD < cSig && pm >= ps) { signals.push({ n:"Croisement MACD Baissier ⚠️", dir:"bear", pts:4, desc:"MACD vient de croiser sous le signal — signal de vente fort" }); bear += 4; }
+    else if (cMACD > cSig) { signals.push({ n:"MACD Positif", dir:"bull", pts:1, desc:"MACD au-dessus du signal — momentum haussier" }); bull += 1; }
+    else { signals.push({ n:"MACD Négatif", dir:"bear", pts:1, desc:"MACD sous le signal — momentum baissier" }); bear += 1; }
+  }
+
+  // Bollinger
+  if (cUp && cLo) {
+    if (cp <= cLo) { signals.push({ n:"Prix sous Bande Basse 🟢", dir:"bull", pts:3, desc:`Prix (${cp}) sous la bande basse (${Math.round(cLo)}) — rebond probable` }); bull += 3; }
+    else if (cp >= cUp) { signals.push({ n:"Prix sur Bande Haute 🔴", dir:"bear", pts:3, desc:`Prix (${cp}) au-dessus de la bande haute (${Math.round(cUp)}) — risque correction` }); bear += 3; }
+    else if (cp > cMid) { signals.push({ n:"Prix mi-haute Bollinger", dir:"bull", pts:1, desc:"Prix dans la moitié supérieure — légère tendance haussière" }); bull += 1; }
+    else { signals.push({ n:"Prix mi-basse Bollinger", dir:"bear", pts:1, desc:"Prix dans la moitié inférieure — légère pression baissière" }); bear += 1; }
+  }
+
+  // MA Trend
+  if (c20 && c50) {
+    if (c20 > c50 * 1.01) { signals.push({ n:"Golden Cross MA20>MA50", dir:"bull", pts:3, desc:"MA20 au-dessus de MA50 — tendance haussière confirmée" }); bull += 3; }
+    else if (c20 < c50 * 0.99) { signals.push({ n:"Death Cross MA20<MA50", dir:"bear", pts:3, desc:"MA20 en-dessous de MA50 — tendance baissière" }); bear += 3; }
+    if (cp > c20) { signals.push({ n:"Prix > MA20", dir:"bull", pts:1, desc:"Prix au-dessus de la moyenne 20j" }); bull += 1; }
+    else { signals.push({ n:"Prix < MA20", dir:"bear", pts:1, desc:"Prix sous la moyenne 20j" }); bear += 1; }
+  }
+
+  // Momentum court terme
+  if (closes.length >= 6) {
+    const perf5 = (cp / closes[L - 5] - 1) * 100;
+    if (perf5 > 4) { signals.push({ n:`Momentum +5j (+${perf5.toFixed(1)}%)`, dir:"bull", pts:2, desc:"Fort momentum positif sur 5 séances" }); bull += 2; }
+    else if (perf5 < -4) { signals.push({ n:`Momentum -5j (${perf5.toFixed(1)}%)`, dir:"bear", pts:2, desc:"Fort momentum négatif sur 5 séances" }); bear += 2; }
+  }
+
+  // ── Signal Actualités (fondamental non encore pricé) ──────────────────────
+  // Pondération max : 6 pts (≈ 25% du score total) — uniquement news fraîches
+  const newsSignals = getNewsSignalsForTicker(ticker);
+  if (newsSignals.length > 0) {
+    const top = newsSignals[0]; // news avec le score le plus élevé
+    const sig = top._signal;
+    const pts = Math.max(1, Math.min(6, Math.round(sig.score / 17)));
+    const titreShort = top.titre.length > 45 ? top.titre.substring(0, 45) + "…" : top.titre;
+    if (sig.action.includes("ACHETER") || sig.action.includes("ACCUMULER")) {
+      signals.push({ n:`📰 News non pricée [${sig.urgency}]`, dir:"bull", pts,
+        desc:`${titreShort} — ${sig.reason}` });
+      bull += pts;
+    } else if (sig.action.includes("VENDRE") || sig.action.includes("RÉDUIRE")) {
+      signals.push({ n:`📰 News non pricée [${sig.urgency}]`, dir:"bear", pts,
+        desc:`${titreShort} — ${sig.reason}` });
+      bear += pts;
+    }
+  }
+
+  const total = bull + bear || 1;
+  const conf = Math.round((Math.max(bull, bear) / total) * 100);
+  const vol = calcVolatility(closes.slice(-20));
+  const sr = findSR(closes);
+
+  let dir, action, color, horizon;
+  if (bull > bear * 1.5) { dir = "HAUSSE 📈"; action = bull >= 10 ? "ACHETER" : "ACCUMULER"; color = "var(--success)"; horizon = "2–4 semaines"; }
+  else if (bear > bull * 1.5) { dir = "BAISSE 📉"; action = bear >= 10 ? "VENDRE" : "RÉDUIRE"; color = "var(--danger)"; horizon = "2–6 semaines"; }
+  else { dir = "NEUTRE ↔️"; action = "ATTENDRE / CONSERVER"; color = "var(--warning)"; horizon = "1–3 semaines"; }
+
+  const tgt1 = dir.includes("HAUSSE") ? Math.round(cp * (1 + vol * 2.5)) : Math.round(cp * (1 - vol * 2.5));
+  const tgt2 = dir.includes("HAUSSE") ? Math.round(cp * (1 + vol * 5)) : Math.round(cp * (1 - vol * 5));
+  const sl = dir.includes("HAUSSE") ? Math.round(cp * (1 - vol * 1.5)) : Math.round(cp * (1 + vol * 1.5));
+  const rr = Math.abs(tgt1 - cp) / Math.abs(sl - cp || 1);
+
+  return { ticker, stock, cp, dir, action, color, conf, horizon,
+    bull, bear, signals, sr, tgt1, tgt2, sl, rr: rr.toFixed(1),
+    rsi: cRSI, macdVal: cMACD, bollUp: cUp, bollLo: cLo,
+    sma20: c20, sma50: c50, vol: (vol * 100).toFixed(2) };
+}
+
+// ==================== RENDU ANALYSE TECHNIQUE ====================
+let chartPriceInst = null, chartRSIInst = null, chartMACDInst = null;
+
+function renderTA() {
+  const ticker = document.getElementById("atTicker").value;
+  const days = parseInt(document.getElementById("atPeriod").value);
+  if (!ticker) return;
+  const hist = getHistory(ticker, days);
+  if (hist.length < 10) { alert("Pas assez de données. Mettez à jour les cours."); return; }
+  const closes = hist.map(h => h.close);
+  const labels = hist.map(h => h.date.slice(5)); // MM-DD
+  const rsi = calcRSI(closes, 14);
+  const { macd, signal: ms, histogram } = calcMACD(closes);
+  const boll = calcBollinger(closes, 20);
+  const sma20 = calcSMA(closes, 20);
+  const sma50 = calcSMA(closes, 50);
+  const L = closes.length - 1;
+  const stock = stocks.find(s => s.ticker === ticker);
+  document.getElementById("taChartTitle").textContent = `${ticker} — ${stock?.name || ""} (${days}j)`;
+
+  // KPIs
+  const cRSI = rsi[L]; const perf = ((closes[L] / closes[0] - 1) * 100).toFixed(1);
+  const vol = (calcVolatility(closes) * 100).toFixed(2);
+  const kpis = [
+    { icon:"💹", label:"Cours Actuel", val:`${closes[L].toLocaleString("fr")} FCFA`, sub:`Perf. période: ${perf >= 0 ? "+" : ""}${perf}%`, color: perf >= 0 ? "var(--success)" : "var(--danger)" },
+    { icon:"📊", label:"RSI (14)", val: cRSI ? cRSI.toFixed(1) : "─", sub: cRSI < 30 ? "Survendu 🟢" : cRSI > 70 ? "Suracheté 🔴" : "Neutre ⚪", color: cRSI < 30 ? "var(--success)" : cRSI > 70 ? "var(--danger)" : "var(--text)" },
+    { icon:"📈", label:"Volatilité", val:`${vol}%/j`, sub:`±${(vol * Math.sqrt(20)).toFixed(1)}% / mois`, color: "var(--warning)" },
+    { icon:"🧲", label:"Bollinger", val: boll.upper[L] ? `${Math.round(boll.lower[L])} – ${Math.round(boll.upper[L])}` : "─", sub:`Milieu: ${boll.middle[L] ? Math.round(boll.middle[L]).toLocaleString("fr") : "─"}`, color: "var(--primary)" },
+  ];
+  document.getElementById("taKpis").innerHTML = kpis.map(k => `
+    <div class="kpi-card"><div class="kpi-icon">${k.icon}</div>
+    <div class="kpi-label">${k.label}</div>
+    <div class="kpi-value" style="font-size:1.4rem;color:${k.color}">${k.val}</div>
+    <div class="kpi-change" style="color:var(--text-muted)">${k.sub}</div></div>`).join("");
+
+  // RSI badge
+  if (cRSI !== null) {
+    const el = document.getElementById("rsiValue");
+    el.textContent = cRSI.toFixed(1);
+    el.className = `badge ${cRSI < 30 ? "badge-buy" : cRSI > 70 ? "badge-sell" : "badge-hold"}`;
+  }
+
+  // MACD badge
+  const cM = macd[L], cS = ms[L];
+  if (cM !== null && cS !== null) {
+    const el = document.getElementById("macdValue");
+    el.textContent = cM > cS ? "Haussier" : "Baissier";
+    el.className = `badge ${cM > cS ? "badge-buy" : "badge-sell"}`;
+  }
+
+  // ── Chart Prix ──
+  if (chartPriceInst) chartPriceInst.destroy();
+  const ctxP = document.getElementById("chartPrice").getContext("2d");
+  chartPriceInst = new Chart(ctxP, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        { label:"Cours", data:closes, borderColor:"#2a5298", borderWidth:2, pointRadius:0, tension:0.3, fill:false, order:1 },
+        { label:"MA20", data:sma20, borderColor:"#f59e0b", borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[4,2], order:2 },
+        { label:"MA50", data:sma50, borderColor:"#ef4444", borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3], order:3 },
+        { label:"Boll. Haute", data:boll.upper, borderColor:"rgba(16,185,129,0.3)", borderWidth:1, pointRadius:0, fill:false, order:4 },
+        { label:"Boll. Basse", data:boll.lower, borderColor:"rgba(16,185,129,0.3)", borderWidth:1, pointRadius:0, fill:"-1", backgroundColor:"rgba(16,185,129,0.05)", order:5 },
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{mode:"index",intersect:false} }, scales:{ x:{ticks:{maxTicksLimit:10,font:{size:10}}, grid:{display:false}}, y:{ticks:{font:{size:10}}, grid:{color:"rgba(0,0,0,0.05)"}} } }
+  });
+
+  // ── Chart RSI ──
+  if (chartRSIInst) chartRSIInst.destroy();
+  const ctxR = document.getElementById("chartRSI").getContext("2d");
+  chartRSIInst = new Chart(ctxR, {
+    type: "line",
+    data: { labels, datasets: [{ label:"RSI", data:rsi, borderColor:"#8b5cf6", borderWidth:2, pointRadius:0, tension:0.3, fill:false }] },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, annotation:{} },
+      scales:{ x:{ticks:{maxTicksLimit:8,font:{size:9}},grid:{display:false}},
+        y:{ min:0, max:100, ticks:{font:{size:9}},
+          grid:{ color:(ctx) => ctx.tick.value === 30 || ctx.tick.value === 70 ? "rgba(239,68,68,0.4)" : "rgba(0,0,0,0.05)" }
+        }
+      }
+    }
+  });
+
+  // ── Chart MACD ──
+  if (chartMACDInst) chartMACDInst.destroy();
+  const ctxM = document.getElementById("chartMACD").getContext("2d");
+  chartMACDInst = new Chart(ctxM, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        { type:"line", label:"MACD", data:macd, borderColor:"#2563eb", borderWidth:2, pointRadius:0, tension:0.3, fill:false, order:1 },
+        { type:"line", label:"Signal", data:ms, borderColor:"#f59e0b", borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, order:2 },
+        { type:"bar", label:"Histo", data:histogram,
+          backgroundColor: histogram.map(v => v === null ? "transparent" : v >= 0 ? "rgba(16,185,129,0.5)" : "rgba(239,68,68,0.5)"),
+          order:3 }
+      ]
+    },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{maxTicksLimit:8,font:{size:9}},grid:{display:false}},y:{ticks:{font:{size:9}},grid:{color:"rgba(0,0,0,0.05)"}}} }
+  });
+
+  // Support / Résistance
+  const sr = findSR(closes);
+  const cp = closes[L];
+  document.getElementById("srTable").innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div style="font-weight:700;color:var(--success);margin-bottom:10px">🟢 Supports (planchers)</div>
+        ${sr.supports.length ? sr.supports.map((v,i) => `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="font-size:0.78rem;color:var(--text-muted);width:30px">S${i+1}</span>
+            <div style="flex:1;background:#d4edda;border-radius:4px;padding:6px 12px;font-weight:700">${v.toLocaleString("fr")} FCFA</div>
+            <span style="font-size:0.8rem;color:var(--text-muted)">-${((cp-v)/cp*100).toFixed(1)}%</span>
+          </div>`).join("") : "<p style='color:var(--text-muted);font-size:0.85rem'>Pas de support identifié</p>"}
+      </div>
+      <div>
+        <div style="font-weight:700;color:var(--danger);margin-bottom:10px">🔴 Résistances (plafonds)</div>
+        ${sr.resistances.length ? sr.resistances.map((v,i) => `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="font-size:0.78rem;color:var(--text-muted);width:30px">R${i+1}</span>
+            <div style="flex:1;background:#f8d7da;border-radius:4px;padding:6px 12px;font-weight:700">${v.toLocaleString("fr")} FCFA</div>
+            <span style="font-size:0.8rem;color:var(--text-muted)">+${((v-cp)/cp*100).toFixed(1)}%</span>
+          </div>`).join("") : "<p style='color:var(--text-muted);font-size:0.85rem'>Pas de résistance identifiée</p>"}
+      </div>
+    </div>`;
+}
+
+// ==================== RENDU PRÉDICTIONS ====================
+function renderPrediction() {
+  const ticker = document.getElementById("predTicker").value;
+  if (!ticker) return;
+  const a = analyzeStock(ticker);
+
+  if (a.error) {
+    document.getElementById("predResult").innerHTML = `<div class="tip-box"><p>${a.msg}</p></div>`;
+    document.getElementById("tradingCard").innerHTML = "";
+    return;
+  }
+
+  // Jauge de confiance
+  const bullPct = Math.round(a.bull / (a.bull + a.bear || 1) * 100);
+  document.getElementById("predResult").innerHTML = `
+    <div style="text-align:center;padding:16px;background:linear-gradient(135deg,#f8faff,#e8f0fe);border-radius:12px;margin-bottom:16px">
+      <div style="font-size:2rem;margin-bottom:4px">${a.dir.includes("HAUSSE") ? "🚀" : a.dir.includes("BAISSE") ? "⚠️" : "⏸️"}</div>
+      <div style="font-size:1.4rem;font-weight:900;color:${a.color}">${a.dir}</div>
+      <div style="font-size:0.9rem;color:var(--text-muted);margin-top:4px">Confiance : <strong>${a.conf}%</strong> | Horizon : <strong>${a.horizon}</strong></div>
+      <div style="margin:14px 0">
+        <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:4px"><span style="color:var(--success)">🐂 Haussier ${a.bull}pts</span><span style="color:var(--danger)">🐻 Baissier ${a.bear}pts</span></div>
+        <div style="height:12px;background:#fee2e2;border-radius:6px;overflow:hidden">
+          <div style="height:100%;width:${bullPct}%;background:linear-gradient(to right,#10b981,#34d399);border-radius:6px;transition:width 0.5s"></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      ${a.signals.map(s => `
+        <div style="display:flex;gap:10px;padding:8px;border-radius:8px;margin-bottom:6px;background:${s.dir==="bull"?"#f0fdf4":s.dir==="bear"?"#fff5f5":"#f8faff"}">
+          <span style="font-size:1rem">${s.dir==="bull"?"🟢":s.dir==="bear"?"🔴":"⚪"}</span>
+          <div><div style="font-size:0.82rem;font-weight:700">${s.n} <span style="color:var(--text-muted);font-weight:400">(+${s.pts}pts)</span></div>
+          <div style="font-size:0.78rem;color:var(--text-muted)">${s.desc}</div></div>
+        </div>`).join("")}
+    </div>`;
+
+  // Trading card
+  const isHausse = a.dir.includes("HAUSSE");
+  const isBaisse = a.dir.includes("BAISSE");
+  document.getElementById("tradingCard").innerHTML = `
+    <div style="background:${isHausse?"linear-gradient(135deg,#064e3b,#065f46)":isBaisse?"linear-gradient(135deg,#7f1d1d,#991b1b)":"linear-gradient(135deg,#1e293b,#334155)"};color:white;border-radius:12px;padding:20px">
+      <div style="font-size:1.1rem;font-weight:800;margin-bottom:16px">📋 Fiche de Trading — ${a.ticker}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:0.75rem;opacity:0.8">ACTION RECOMMANDÉE</div>
+          <div style="font-size:1.2rem;font-weight:900;color:#fcd34d;margin-top:4px">${a.action}</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:0.75rem;opacity:0.8">COURS ACTUEL</div>
+          <div style="font-size:1.2rem;font-weight:700;margin-top:4px">${a.cp.toLocaleString("fr")} FCFA</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;font-size:0.82rem">
+        <div style="background:rgba(16,185,129,0.2);border-radius:6px;padding:10px;text-align:center">
+          <div style="opacity:0.75">🎯 Objectif 1</div>
+          <div style="font-weight:800;font-size:1rem;color:#6ee7b7">${a.tgt1.toLocaleString("fr")}</div>
+          <div style="opacity:0.7">${((a.tgt1-a.cp)/a.cp*100).toFixed(1)}%</div>
+        </div>
+        <div style="background:rgba(16,185,129,0.15);border-radius:6px;padding:10px;text-align:center">
+          <div style="opacity:0.75">🎯 Objectif 2</div>
+          <div style="font-weight:800;font-size:1rem;color:#6ee7b7">${a.tgt2.toLocaleString("fr")}</div>
+          <div style="opacity:0.7">${((a.tgt2-a.cp)/a.cp*100).toFixed(1)}%</div>
+        </div>
+        <div style="background:rgba(239,68,68,0.2);border-radius:6px;padding:10px;text-align:center">
+          <div style="opacity:0.75">🛑 Stop-Loss</div>
+          <div style="font-weight:800;font-size:1rem;color:#fca5a5">${a.sl.toLocaleString("fr")}</div>
+          <div style="opacity:0.7">${((a.sl-a.cp)/a.cp*100).toFixed(1)}%</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;background:rgba(255,255,255,0.08);border-radius:6px;padding:10px;font-size:0.8rem">
+        <span>📊 Risque/Rendement : <strong>${a.rr}x</strong></span>
+        <span>⏱️ Horizon : <strong>${a.horizon}</strong></span>
+        <span>🌊 Volatilité : <strong>${a.vol}%/j</strong></span>
+      </div>
+    </div>
+    <div class="tip-box" style="margin-top:12px">
+      <div class="tip-title">⚠️ Avertissement</div>
+      <p>Ces prédictions combinent analyse technique et signaux fondamentaux (actualités non pricées). Elles ne garantissent pas les résultats. Investissez toujours avec prudence.</p>
+    </div>`;
+
+  // ── Actualités non encore pricées pour ce titre ──────────────────────────
+  const freshNews = getNewsSignalsForTicker(ticker);
+  const predNewsEl = document.getElementById("predNewsSignals");
+  if (predNewsEl) {
+    if (freshNews.length === 0) {
+      predNewsEl.innerHTML = `<div style="font-size:0.82rem;color:var(--text-muted);padding:10px 0">Aucune actualité récente non pricée pour ${ticker}.</div>`;
+    } else {
+      predNewsEl.innerHTML = `
+        <div style="font-weight:700;margin-bottom:8px;font-size:0.85rem">📰 Actualités non pricées (${freshNews.length})</div>
+        ${freshNews.slice(0, 3).map(n => `
+          <div style="background:${n._signal.color}15;border-left:3px solid ${n._signal.color};border-radius:6px;padding:8px 10px;margin-bottom:6px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+              <span style="font-weight:700;color:${n._signal.color};font-size:0.8rem">${n._signal.emoji} ${n._signal.action}</span>
+              <span style="font-size:0.72rem;color:var(--text-muted)">Score ${n._signal.score}/100</span>
+            </div>
+            <div style="font-size:0.8rem;font-weight:600;line-height:1.3">${n.titre.substring(0, 60)}${n.titre.length > 60 ? '…' : ''}</div>
+            <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">${n._signal.reason}</div>
+          </div>`).join("")}`;
+    }
+  }
+
+  // Synchroniser avec l'onglet AT
+  document.getElementById("atTicker").value = ticker;
+}
+
+function renderTopTrades() {
+  const all = stocks.map(s => analyzeStock(s.ticker)).filter(a => !a.error);
+  const scored = all.map(a => ({
+    ...a, tradScore: a.dir.includes("HAUSSE") ? a.bull * a.conf / 100 : a.dir.includes("BAISSE") ? -a.bear * a.conf / 100 : 0
+  }));
+  const buys = scored.filter(a => a.dir.includes("HAUSSE")).sort((x, y) => y.tradScore - x.tradScore).slice(0, 3);
+  const sells = scored.filter(a => a.dir.includes("BAISSE")).sort((x, y) => x.tradScore - y.tradScore).slice(0, 2);
+  const combined = [...buys, ...sells];
+  document.getElementById("topTrades").innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+      ${combined.map(a => `
+        <div style="border:2px solid ${a.dir.includes("HAUSSE")?"#10b981":"#ef4444"};border-radius:10px;padding:14px;cursor:pointer" onclick="document.getElementById('predTicker').value='${a.ticker}';renderPrediction()">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div><span style="font-weight:800;font-size:1rem">${a.ticker}</span> <span style="font-size:0.78rem;color:var(--text-muted)">${a.stock?.sector || ""}</span></div>
+            <span class="badge ${a.dir.includes("HAUSSE")?"badge-buy":"badge-sell"}">${a.action}</span>
+          </div>
+          <div style="font-size:0.82rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center">
+            <div style="background:#f8faff;border-radius:6px;padding:6px"><div style="color:var(--text-muted);font-size:0.72rem">Cours</div><div style="font-weight:700">${a.cp.toLocaleString("fr")}</div></div>
+            <div style="background:${a.dir.includes("HAUSSE")?"#d4edda":"#f8d7da"};border-radius:6px;padding:6px"><div style="color:var(--text-muted);font-size:0.72rem">Objectif</div><div style="font-weight:700">${a.tgt1.toLocaleString("fr")}</div></div>
+            <div style="background:#fff3cd;border-radius:6px;padding:6px"><div style="color:var(--text-muted);font-size:0.72rem">Confiance</div><div style="font-weight:700">${a.conf}%</div></div>
+          </div>
+          <div style="margin-top:8px;font-size:0.75rem;color:var(--text-muted)">R/R: ${a.rr}x | RSI: ${a.rsi?.toFixed(0)||"─"} | Horizon: ${a.horizon}</div>
+        </div>`).join("")}
+    </div>`;
+}
+
+function renderSignalTable() {
+  const tbody = document.getElementById("signalTable");
+  if (!tbody) return;
+  const rows = stocks.map(s => {
+    const a = analyzeStock(s.ticker);
+    if (a.error) return `<tr><td class="ticker">${s.ticker}</td><td colspan="8" style="color:var(--text-muted);font-size:0.8rem">Données insuffisantes</td></tr>`;
+    const rsiColor = a.rsi < 30 ? "var(--success)" : a.rsi > 70 ? "var(--danger)" : "var(--text)";
+    const macdStatus = a.macdVal !== null ? (a.macdVal > 0 ? `<span style="color:var(--success)">▲ Positif</span>` : `<span style="color:var(--danger)">▼ Négatif</span>`) : "─";
+    const bollPos = a.cp && a.bollLo && a.bollUp ? (a.cp <= a.bollLo ? `<span style="color:var(--success)">Bas 🟢</span>` : a.cp >= a.bollUp ? `<span style="color:var(--danger)">Haut 🔴</span>` : "Milieu") : "─";
+    const maT = a.sma20 && a.sma50 ? (a.sma20 > a.sma50 ? `<span style="color:var(--success)">Haussière</span>` : `<span style="color:var(--danger)">Baissière</span>`) : "─";
+    return `<tr>
+      <td class="ticker" style="cursor:pointer" onclick="document.getElementById('predTicker').value='${s.ticker}';showSection('predictions');renderPrediction()">${s.ticker}</td>
+      <td style="font-weight:700">${s.price.toLocaleString("fr")}</td>
+      <td style="color:${rsiColor};font-weight:700">${a.rsi ? a.rsi.toFixed(1) : "─"}</td>
+      <td>${macdStatus}</td>
+      <td>${bollPos}</td>
+      <td>${maT}</td>
+      <td style="color:var(--success);font-weight:700">${a.bull}</td>
+      <td style="color:var(--danger);font-weight:700">${a.bear}</td>
+      <td><span class="badge ${a.dir.includes("HAUSSE")?"badge-buy":a.dir.includes("BAISSE")?"badge-sell":"badge-hold"}">${a.action}</span></td>
+    </tr>`;
+  });
+  tbody.innerHTML = rows.join("");
+}
+
+// ==================== REFRESH GLOBAL ====================
+// Appelée après TOUTE mise à jour de cours — synchronise toutes les sections
+function refreshAll(source) {
+  // 1. Sauvegarder dans l'historique
+  saveToHistory();
+
+  // 2. Rafraîchir les sections de base
+  renderStockTable();
+  renderDashboard();
+  renderPortfolio();
+
+  // 3. Recalculer scoring & alertes
+  renderScoring();
+
+  // 4. Si l'onglet Analyse Technique est ouvert et un titre est sélectionné → re-rendre le graphique
+  const atTicker = document.getElementById("atTicker")?.value;
+  if (document.getElementById("analyse-technique")?.classList.contains("active") && atTicker) {
+    renderTA();
+  }
+
+  // 5. Si l'onglet Prédictions est ouvert → recalculer
+  if (document.getElementById("predictions")?.classList.contains("active")) {
+    renderTopTrades();
+    renderSignalTable();
+    const predTicker = document.getElementById("predTicker")?.value;
+    if (predTicker) renderPrediction();
+  }
+
+  console.log(`[refreshAll] ${source || "─"} → historique mis à jour, ${stocks.length} titres synchronisés`);
+}
+
+// ==================== MISE À JOUR DES COURS ====================
+function renderMajTable() {
+  const tbody = document.getElementById("majTableBody");
+  if (!tbody) return;
+  tbody.innerHTML = stocks.map((s, i) => `
+    <tr>
+      <td><span class="ticker">${s.ticker}</span></td>
+      <td style="font-size:0.82rem;color:var(--text-muted)">${s.name}</td>
+      <td><input type="number" id="maj-price-${i}" value="${s.price}" style="width:110px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.88rem;font-weight:700"></td>
+      <td><input type="number" id="maj-var-${i}" value="${s.var1d}" step="0.1" style="width:100px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.88rem"></td>
+      <td><input type="number" id="maj-div-${i}" value="${s.div}" step="0.1" style="width:90px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.88rem"></td>
+      <td><input type="number" id="maj-per-${i}" value="${s.per}" step="0.1" style="width:90px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.88rem"></td>
+    </tr>`).join("");
+}
+
+function saveMajManuel() {
+  let updated = 0;
+  stocks.forEach((s, i) => {
+    const newPrice = parseFloat(document.getElementById(`maj-price-${i}`)?.value);
+    const newVar = parseFloat(document.getElementById(`maj-var-${i}`)?.value);
+    const newDiv = parseFloat(document.getElementById(`maj-div-${i}`)?.value);
+    const newPer = parseFloat(document.getElementById(`maj-per-${i}`)?.value);
+    if (!isNaN(newPrice)) { s.price = newPrice; updated++; }
+    if (!isNaN(newVar)) s.var1d = newVar;
+    if (!isNaN(newDiv)) s.div = newDiv;
+    if (!isNaN(newPer)) s.per = newPer;
+  });
+  const now = new Date().toLocaleString("fr-FR");
+  localStorage.setItem("brvm_lastMaj", now);
+  document.getElementById("lastMajDate").textContent = `Mise à jour le ${now} (saisie manuelle)`;
+  document.getElementById("majStatus").innerHTML = `<div style="background:#d4edda;color:#155724;padding:10px 14px;border-radius:8px">✅ ${updated} cours mis à jour — tous les onglets sont synchronisés automatiquement.</div>`;
+  refreshAll("saisie manuelle");
+}
+
+function resetPrices() {
+  if (!confirm("Réinitialiser tous les cours aux valeurs d'origine ?")) return;
+  renderMajTable();
+  document.getElementById("majStatus").innerHTML = `<div style="background:#fff3cd;color:#856404;padding:10px 14px;border-radius:8px">↺ Valeurs réinitialisées — cliquez "Appliquer" pour confirmer.</div>`;
+}
+
+function switchMajTab(tab) {
+  ["manuel","csv","paste","pdf"].forEach(t => {
+    const el = document.getElementById(`tab-${t}`);
+    if (el) el.style.display = t === tab ? "block" : "none";
+    const btn = document.getElementById(`tab-${t}-btn`);
+    if (!btn) return;
+    if (t === "pdf") {
+      btn.style.background = t === tab ? "#3b82f6" : "transparent";
+      btn.style.color = t === tab ? "white" : "#3b82f6";
+    } else {
+      btn.className = t === tab ? "btn btn-primary" : "btn btn-outline";
+    }
+  });
+  if (tab === "manuel") renderMajTable();
+}
+
+// ==================== MODULE PDF BULLETIN ====================
+// Configurer PDF.js worker
+if (typeof pdfjsLib !== "undefined") {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
+function pdfDragOver(e) {
+  e.preventDefault();
+  document.getElementById("pdfDropZone").style.background = "#dbeafe";
+  document.getElementById("pdfDropZone").style.borderColor = "#2563eb";
+}
+function pdfDragLeave(e) {
+  document.getElementById("pdfDropZone").style.background = "#f0f9ff";
+  document.getElementById("pdfDropZone").style.borderColor = "#93c5fd";
+}
+function pdfDrop(e) {
+  e.preventDefault();
+  pdfDragLeave(e);
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === "application/pdf") processPdfFile(file);
+  else showPdfError("Veuillez déposer un fichier PDF.");
+}
+function handlePdfFile(input) {
+  const file = input.files[0];
+  if (file) processPdfFile(file);
+}
+
+async function processPdfFile(file) {
+  if (typeof pdfjsLib === "undefined") {
+    showPdfError("Erreur : PDF.js non chargé. Vérifiez votre connexion internet.");
+    return;
+  }
+
+  // Afficher la progression
+  document.getElementById("pdfProgress").style.display = "block";
+  document.getElementById("pdfResult").innerHTML = "";
+  document.getElementById("pdfProgressBar").style.width = "0%";
+  document.getElementById("pdfProgressText").textContent = "Lecture du PDF...";
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const totalPages = pdf.numPages;
+    document.getElementById("pdfPageInfo").textContent = `${totalPages} page(s) détectée(s)`;
+
+    let fullText = "";
+    for (let p = 1; p <= totalPages; p++) {
+      const page = await pdf.getPage(p);
+      const content = await page.getTextContent();
+
+      // ── Reconstruction ligne par ligne en regroupant par coordonnée Y ──────
+      // Chaque item PDF a transform[5] = position Y et transform[4] = position X.
+      // Les cellules d'une même ligne de tableau ont le même Y (± 4 pts).
+      // On regroupe par Y pour reconstruire chaque ligne du bulletin séparément,
+      // évitant ainsi la concaténation de toute la page en une seule chaîne.
+      const items = content.items.filter(i => i.str && i.str.trim().length > 0);
+
+      if (items.length > 0) {
+        // Arrondir Y à 4 pts pour absorber les micro-décalages typographiques
+        const rowMap = new Map();
+        for (const item of items) {
+          const y = Math.round(item.transform[5] / 4) * 4;
+          if (!rowMap.has(y)) rowMap.set(y, []);
+          rowMap.get(y).push(item);
+        }
+        // Trier : Y décroissant (haut → bas), puis X croissant (gauche → droite)
+        const sortedYs = [...rowMap.keys()].sort((a, b) => b - a);
+        const pageLines = sortedYs.map(y => {
+          const row = rowMap.get(y).sort((a, b) => a.transform[4] - b.transform[4]);
+          return row.map(i => i.str.trim()).filter(s => s).join(" ");
+        }).filter(l => l.length > 1);
+        fullText += pageLines.join("\n") + "\n";
+      } else {
+        fullText += "\n";
+      }
+
+      const pct = Math.round((p / totalPages) * 80);
+      document.getElementById("pdfProgressBar").style.width = pct + "%";
+      document.getElementById("pdfProgressText").textContent = `Lecture page ${p}/${totalPages}...`;
+    }
+
+    document.getElementById("pdfProgressText").textContent = "Extraction des cours...";
+    document.getElementById("pdfProgressBar").style.width = "90%";
+
+    const extracted = extractCoursFromText(fullText);
+
+    document.getElementById("pdfProgressBar").style.width = "100%";
+    document.getElementById("pdfProgressText").textContent = "Terminé ✅";
+
+    displayPdfResults(extracted, file.name);
+
+  } catch (err) {
+    showPdfError("Impossible de lire ce PDF. Assurez-vous qu'il n'est pas protégé. (" + err.message + ")");
+  }
+}
+
+// ── Correspondance noms complets → tickers BRVM ──────────────────────────
+const BULLETIN_NAME_MAP = {
+  // ── Finance / Banques ────────────────────────────────────────────────────
+  "SGBCI": "SGBC", "SOCIETE GENERALE COTE": "SGBC",
+  // ECOC = Ecobank CI (filiale) ≠ ETIT (holding)
+  "ECOBANK COTE D": "ECOC", "ECOBANK CI": "ECOC",
+  "ECOBANK TRANS": "ETIT", "ETI ": "ETIT",
+  "BANK OF AFRICA BN": "BOAB", "BOA BN": "BOAB",
+  "BANK OF AFRICA CI": "BOAC", "BOA CI": "BOAC",
+  "BANK OF AFRICA BF": "BOABF", "BOA BF": "BOABF",
+  "BANK OF AFRICA ML": "BOAM", "BOA ML": "BOAM",
+  "BANK OF AFRICA SEN": "BOAS", "BOA SEN": "BOAS",
+  "BANK OF AFRICA NG": "BOAN", "BOA NG": "BOAN",
+  "NSIA BANQUE": "NSBC",
+  "CORIS BANK": "CBIBF",
+  "SOCIETE IVOIRIENNE DE BANQUE": "SIBC",
+  "BICI CI": "BICC", "BANQUE INTERN": "BICC",
+  "ORAGROUP": "ORGT",
+  "BANQUE ATLANTIQUE": "BACI",
+  // ── Télécoms ─────────────────────────────────────────────────────────────
+  "SONATEL": "SNTS",
+  "ORANGE COTE D": "ORAC", "ORANGE CI": "ORAC",
+  "ONATEL": "ONTBF",
+  // ── Agriculture ──────────────────────────────────────────────────────────
+  "PALMCI": "PALC", "PALM CI": "PALC",
+  "SAPH CI": "SPHC", "SAPH": "SPHC",
+  "SIFCA": "SIFC",
+  "SUCRIVOIRE": "SCRC",
+  "SOGB": "SOGC",
+  // ── Industrie ────────────────────────────────────────────────────────────
+  "NESTLE CI": "NTLC", "NESTLÉ CI": "NTLC",
+  "SMB CI": "SMBC",
+  "SOLIBRA CI": "SLBC", "SOLIBRA": "SLBC",       // ← SLBC (pas SLBR)
+  "SITAB CI": "STBC", "SITAB": "STBC",            // ← STBC (pas STAB)
+  "NEI-CEDA": "NEIC", "NEI CEDA": "NEIC",         // ← NEIC (pas NEIM)
+  "SICABLE": "CABC",
+  "SETAO": "STAC",
+  "EVIOSYS": "SEMC", "SIEM CI": "SEMC",
+  "FILTISAC": "FTSC",
+  "ERIUM": "SIVC", "AIR LIQUIDE CI": "SIVC",
+  "UNILEVER CI": "UNLC",
+  // ── Distribution ─────────────────────────────────────────────────────────
+  "CFAO MOTORS": "CFAC", "CFAO CI": "CFAC",
+  "AFRICA GLOBAL LOGISTICS": "SDSC",
+  "SERVAIR ABIDJAN": "ABJC",
+  "BERNABE": "BNBC",
+  "TRACTAFRIC": "PRSC",
+  "UNIWAX": "UNXC",
+  "LOTERIE NATIONALE": "LNBB",
+  // ── Énergie / Services Publics ────────────────────────────────────────────
+  "TOTALENERGIES MARKETING CI": "TTLC",
+  "TOTALENERGIES MARKETING SN": "TTLS",
+  "VIVO ENERGY": "SHEC",
+  "COMPAGNIE IVOIRIENNE D": "CIEC", "CIE CI": "CIEC",
+  "SODE CI": "SDCC", "SODECI": "SDCC",
+  "SAFCA": "SAFC",
+};
+
+// Résolution nom→ticker : cherche d'abord le ticker exact, puis le nom long
+function resolveTicker(label) {
+  const up = label.toUpperCase().trim();
+  // 1. Correspondance directe ticker (ex: "SGBC", "SNTS")
+  const direct = stocks.find(s => s.ticker === up);
+  if (direct) return direct.ticker;
+  // 2. Correspondance dans le dictionnaire de noms
+  for (const [key, ticker] of Object.entries(BULLETIN_NAME_MAP)) {
+    if (up.includes(key)) return ticker;
+  }
+  // 3. Correspondance partielle sur le nom du stock
+  const partial = stocks.find(s => up.includes(s.ticker) ||
+    s.name.toUpperCase().split(" ").some(w => w.length > 4 && up.includes(w)));
+  return partial ? partial.ticker : null;
+}
+
+// Nettoie un nombre FCFA : "36 000" → 36000, "18 500,50" → 18500.50
+function parseFcfa(str) {
+  if (!str) return NaN;
+  // Supprimer espaces insécables et espaces normaux utilisés comme séparateurs de milliers
+  const clean = str.replace(/[\s  ]/g, "").replace(",", ".");
+  const val = parseFloat(clean);
+  return val;
+}
+
+// Extrait tous les nombres FCFA d'une chaîne (gère "36 000", "18 500", "1 200 000")
+function extractNumbers(str) {
+  // Regex qui capture des groupes de chiffres séparés par espaces (format FCFA)
+  const tokens = str.match(/\d[\d\s]{0,9}\d|\d+/g) || [];
+  return tokens
+    .map(t => parseFcfa(t))
+    .filter(n => !isNaN(n) && n > 0);
+}
+
+function extractCoursFromText(text) {
+  /*
+   * Structure du bulletin officiel BRVM (chaque ligne de cotation) :
+   * SECT  TICKER  NOM_COMPLET...  COURS_PREV  COURS_OUV  COURS_CLOT  VAR%  VOL  VALEUR  REF  YTD%  ...
+   * Exemple :
+   *   FIN  SGBC  SOCIETE GENERALE COTE D'IVOIRE  36 000  36 200  36 600  1,67 %  4 227  152 319 985  ...
+   *
+   * → Le cours à appliquer est COURS_CLOT = le DERNIER prix avant la variation %.
+   */
+  const results = [];
+  const found   = new Set();
+
+  // Ensemble des tickers connus pour détection rapide
+  const tickerSet = new Set(stocks.map(s => s.ticker));
+  // Codes secteur BRVM (bulletin officiel 2025-2026)
+  const SECTORS = new Set(["CB","ENE","FIN","TEL","IND","AUT","AGR","DIS","TRA","IMM","AGRI","INDUS","SPU","CD"]);
+
+  const lines = text.split(/\n/).map(l => l.trim()).filter(l => l.length > 0);
+
+  // ── Helper : extraire le cours de clôture et la variation depuis un texte ─
+  function extractFromChunk(chunk) {
+    const varMatch = chunk.match(/([+-]?\s*\d{1,3}[,\.]\d{2})\s*%/);
+    if (!varMatch) return null;
+    const beforeVar = chunk.substring(0, varMatch.index);
+    const fcfaRx = /\b(\d{1,3}(?:\s\d{3})+)\b/g;
+    const prices = [];
+    let m;
+    while ((m = fcfaRx.exec(beforeVar)) !== null) {
+      const val = parseFcfa(m[1]);
+      if (!isNaN(val) && val >= 10 && val <= 500000) prices.push(val);
+    }
+    if (prices.length === 0) {
+      // Fallback pour petits cours (ex : ETIT à 29 FCFA)
+      const numRx = /\b(\d{1,6})\b/g;
+      while ((m = numRx.exec(beforeVar)) !== null) {
+        const val = parseFloat(m[1]);
+        if (!isNaN(val) && val >= 10 && val <= 500000) prices.push(val);
+      }
+    }
+    if (prices.length === 0) return null;
+    const cours = prices[prices.length - 1]; // CLÔTURE = dernier prix avant variation
+    const variation = parseFloat(varMatch[1].replace(/\s/g, "").replace(",", ".")) || 0;
+    return { cours, variation: round2(variation) };
+  }
+
+  // ── Stratégie 1 : ticker et variation sur la MÊME ligne ──────────────────
+  // Fonctionne quand l'extraction Y-groupée produit des lignes complètes
+  // ex: "FIN SGBC SOCIETE GENERALE COTE D'IVOIRE 36 000 36 200 36 600 1,67 %"
+  for (const line of lines) {
+    if (!line.includes("%")) continue; // optimisation rapide
+    const tokens = line.split(/\s+/);
+    let ticker = null;
+    for (let i = 0; i < Math.min(tokens.length, 6); i++) {
+      const t = tokens[i].replace(/[^A-Za-z]/g, "").toUpperCase();
+      if (!t || SECTORS.has(t)) continue;
+      if (tickerSet.has(t)) { ticker = t; break; }
+    }
+    if (!ticker) {
+      const beforeDigits = line.replace(/\d.*$/, "").trim();
+      if (beforeDigits.length > 3) ticker = resolveTicker(beforeDigits);
+    }
+    if (!ticker || found.has(ticker)) continue;
+    const res = extractFromChunk(line);
+    if (!res) continue;
+    results.push({ ticker, ...res });
+    found.add(ticker);
+  }
+
+  // ── Stratégie 2 : ticker SEUL sur sa ligne (format colonne PDF brut) ─────
+  // Fonctionne quand chaque valeur du tableau est sur sa propre ligne
+  // ex:  "FIN" / "SGBC" / "SOCIETE GENERALE..." / "36 000" / "36 200" / "36 600" / "1,67 %"
+  for (let i = 0; i < lines.length; i++) {
+    const t = lines[i].replace(/[^A-Za-z]/g, "").toUpperCase();
+    if (!tickerSet.has(t) || found.has(t)) continue;
+    const ticker = t;
+    // Collecter les lignes suivantes jusqu'au prochain ticker ou secteur
+    const windowLines = [];
+    for (let k = i + 1; k < Math.min(i + 20, lines.length); k++) {
+      const lt = lines[k].replace(/[^A-Za-z]/g, "").toUpperCase();
+      if (tickerSet.has(lt)) break; // prochain ticker → stop
+      windowLines.push(lines[k]);
+    }
+    const res = extractFromChunk(windowLines.join(" "));
+    if (!res) continue;
+    results.push({ ticker, ...res });
+    found.add(ticker);
+  }
+
+  // ── Stratégie 3 (fallback) : scan global texte aplati ────────────────────
+  // Pour les bulletins dont le PDF.js sort tout en une seule longue chaîne
+  if (results.length < 5) {
+    const flat = text.replace(/\n/g, " ");
+    stocks.forEach(s => {
+      if (found.has(s.ticker)) return;
+      const aliases = [s.ticker, ...Object.entries(BULLETIN_NAME_MAP)
+        .filter(([, v]) => v === s.ticker).map(([k]) => k)];
+      for (const alias of aliases) {
+        const esc = alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const pat = new RegExp(`${esc}[^\\d]{0,40}(\\d{1,3}(?:\\s\\d{3})+|\\d{3,6})`, "i");
+        const hit = flat.match(pat);
+        if (!hit) continue;
+        const cours = parseFcfa(hit[1]);
+        if (isNaN(cours) || cours < 10 || cours > 500000) continue;
+        results.push({ ticker: s.ticker, cours, variation: 0 });
+        found.add(s.ticker);
+        break;
+      }
+    });
+  }
+
+  return results;
+}
+
+function round2(n) { return Math.round(n * 100) / 100; }
+
+function displayPdfResults(extracted, filename) {
+  const nb = extracted.length;
+
+  if (nb === 0) {
+    showPdfError(`Aucun cours BRVM reconnu dans « ${filename} ».<br>
+      <small>Le bulletin est peut-être scanné (image) ou dans un format non standard. Essayez la méthode "Coller depuis BRVM".</small>`);
+    return;
+  }
+
+  // Appliquer les données extraites
+  extracted.forEach(row => {
+    const idx = stocks.findIndex(s => s.ticker === row.ticker);
+    if (idx !== -1) {
+      stocks[idx].price = row.cours;
+      stocks[idx].var1d = row.variation;
+    }
+  });
+
+  const now = new Date().toLocaleString("fr-FR");
+  localStorage.setItem("brvm_lastMaj", now);
+  document.getElementById("lastMajDate").textContent =
+    `Mise à jour le ${now} — via Bulletin PDF « ${filename} »`;
+
+  refreshAll("bulletin PDF");
+
+  // Afficher le tableau de résultats
+  const tableRows = extracted.map(r => {
+    const col = r.variation >= 0 ? "var(--success)" : "var(--danger)";
+    const arrow = r.variation > 0 ? "▲" : r.variation < 0 ? "▼" : "─";
+    return `<tr>
+      <td><span class="ticker">${r.ticker}</span></td>
+      <td style="font-weight:700">${r.cours.toLocaleString("fr")}</td>
+      <td style="color:${col};font-weight:700">${arrow} ${Math.abs(r.variation).toFixed(2)}%</td>
+    </tr>`;
+  }).join("");
+
+  document.getElementById("pdfResult").innerHTML = `
+    <div style="background:#d4edda;color:#155724;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-weight:600">
+      ✅ ${nb} titre(s) extrait(s) depuis « ${filename} » — Application mise à jour !
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Ticker</th><th>Cours extrait</th><th>Variation</th></tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>
+    ${nb < 10 ? `<div class="tip-box" style="margin-top:12px">
+      <div class="tip-title">💡 Peu de titres reconnus ?</div>
+      <p>Certains bulletins BRVM utilisent des noms longs plutôt que les tickers courts.
+      Essayez de copier-coller le contenu du PDF via la méthode "📋 Coller depuis BRVM".</p>
+    </div>` : ""}`;
+}
+
+function showPdfError(msg) {
+  document.getElementById("pdfProgress").style.display = "none";
+  document.getElementById("pdfResult").innerHTML =
+    `<div style="background:#f8d7da;color:#721c24;padding:14px 16px;border-radius:8px">❌ ${msg}</div>`;
+}
+
+// ── Chargement brvm_cours.json (généré par brvm_auto_update.py) ─────────────
+function loadAutoJson(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data) || data.length === 0) {
+        alert("❌ Fichier JSON invalide ou vide.");
+        return;
+      }
+      let updated = 0;
+      let sourceInfo = "";
+      data.forEach(row => {
+        const idx = stocks.findIndex(s => s.ticker === row.ticker);
+        if (idx !== -1 && row.price > 0) {
+          stocks[idx].price = row.price;
+          stocks[idx].var1d = row.var1d ?? 0;
+          updated++;
+          if (!sourceInfo && row.source) sourceInfo = row.source;
+          if (!sourceInfo && row.date)   sourceInfo = `brvm_cours.json du ${row.date}`;
+        }
+      });
+      if (updated === 0) {
+        alert("❌ Aucun ticker reconnu dans ce fichier JSON.");
+        return;
+      }
+      const now = new Date().toLocaleString("fr-FR");
+      const label = sourceInfo || `brvm_cours.json — ${now}`;
+      localStorage.setItem("brvm_lastMaj", now);
+      localStorage.setItem("brvm_lastSource", label);
+      document.getElementById("lastMajDate").textContent = `Mis à jour le ${now} — ${label}`;
+      document.getElementById("lastUpdate").textContent  = `✅ Auto MAJ — ${label}`;
+      document.getElementById("autoUpdateStatus").innerHTML =
+        `✅ <strong>${updated} titres</strong> mis à jour depuis <em>${label}</em>`;
+      refreshAll("brvm_cours.json");
+      document.getElementById("autoUpdateBanner").style.background =
+        "linear-gradient(135deg,#064e3b,#059669)";
+      alert(`✅ ${updated} titres mis à jour depuis ${label}`);
+    } catch(err) {
+      alert("❌ Erreur lecture JSON : " + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Import CSV
+function handleCsvFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => processCsvData(e.target.result);
+  reader.readAsText(file);
+}
+
+function handleCsvDrop(event) {
+  event.preventDefault();
+  const file = event.dataTransfer.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => processCsvData(e.target.result);
+  reader.readAsText(file);
+}
+
+function processCsvData(text) {
+  const lines = text.trim().split("\n");
+  const header = lines[0].toLowerCase().split(",");
+  const iT = header.indexOf("ticker"), iP = header.indexOf("cours"),
+        iV = header.indexOf("variation"), iD = header.indexOf("dividende"), iPer = header.indexOf("per");
+  if (iT === -1 || iP === -1) {
+    document.getElementById("csvPreview").innerHTML = `<div style="background:#f8d7da;color:#721c24;padding:12px;border-radius:8px">❌ Format invalide. Colonnes requises : ticker, cours, variation, dividende, per</div>`;
+    return;
+  }
+  let count = 0;
+  const preview = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(",");
+    const ticker = cols[iT]?.trim().toUpperCase();
+    const idx = stocks.findIndex(s => s.ticker === ticker);
+    if (idx === -1) continue;
+    if (iP !== -1 && !isNaN(parseFloat(cols[iP]))) { stocks[idx].price = parseFloat(cols[iP]); count++; }
+    if (iV !== -1 && !isNaN(parseFloat(cols[iV]))) stocks[idx].var1d = parseFloat(cols[iV]);
+    if (iD !== -1 && !isNaN(parseFloat(cols[iD]))) stocks[idx].div = parseFloat(cols[iD]);
+    if (iPer !== -1 && !isNaN(parseFloat(cols[iPer]))) stocks[idx].per = parseFloat(cols[iPer]);
+    preview.push(`<tr><td class="ticker">${ticker}</td><td>${stocks[idx].price.toLocaleString("fr")}</td><td style="color:${stocks[idx].var1d>=0?"var(--success)":"var(--danger)"}">${stocks[idx].var1d}%</td><td>${stocks[idx].div}%</td><td>${stocks[idx].per}</td></tr>`);
+  }
+  const now = new Date().toLocaleString("fr-FR");
+  localStorage.setItem("brvm_lastMaj", now);
+  document.getElementById("lastMajDate").textContent = `Mise à jour le ${now} (import CSV)`;
+  document.getElementById("csvPreview").innerHTML = `
+    <div style="background:#d4edda;color:#155724;padding:10px 14px;border-radius:8px;margin-bottom:12px">✅ ${count} titres importés — tous les onglets sont synchronisés.</div>
+    <div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Cours</th><th>Variation</th><th>Dividende</th><th>PER</th></tr></thead><tbody>${preview.join("")}</tbody></table></div>`;
+  refreshAll("import CSV");
+}
+
+// Coller depuis BRVM.org
+function parsePastedData() {
+  const text = document.getElementById("pasteArea").value;
+  if (!text.trim()) { alert("Collez d'abord des données."); return; }
+  const lines = text.split("\n").filter(l => l.trim());
+  let count = 0;
+  const matched = [];
+  lines.forEach(line => {
+    stocks.forEach((s, idx) => {
+      if (line.toUpperCase().includes(s.ticker)) {
+        // Extraire des nombres de la ligne
+        const nums = line.match(/-?\d+[\s,.]?\d*/g)?.map(n => parseFloat(n.replace(/\s/g, "").replace(",",".")));
+        if (nums && nums.length >= 1) {
+          const price = nums.find(n => n > 100);
+          const varPct = nums.find(n => Math.abs(n) < 30 && n !== price);
+          if (price) { stocks[idx].price = price; count++; matched.push(s.ticker); }
+          if (varPct !== undefined) stocks[idx].var1d = varPct;
+        }
+      }
+    });
+  });
+  const now = new Date().toLocaleString("fr-FR");
+  if (count > 0) {
+    localStorage.setItem("brvm_lastMaj", now);
+    document.getElementById("lastMajDate").textContent = `Mise à jour le ${now} (collage BRVM.org)`;
+    refreshAll("collage BRVM.org");
+  }
+  document.getElementById("pasteResult").innerHTML = count > 0
+    ? `<div style="background:#d4edda;color:#155724;padding:12px;border-radius:8px">✅ ${count} titre(s) mis à jour : <strong>${matched.join(", ")}</strong></div>`
+    : `<div style="background:#fff3cd;color:#856404;padding:12px;border-radius:8px">⚠️ Aucun ticker reconnu. Vérifiez que le texte contient des tickers BRVM (ex: SNTS, SGBC...)</div>`;
+}
+
+// Charger la dernière date de MAJ au démarrage
+function loadLastMaj() {
+  const d = localStorage.getItem("brvm_lastMaj");
+  if (d) document.getElementById("lastMajDate").textContent = `Dernière mise à jour : ${d}`;
+}
+
+// ==================== ACTUALITÉS ====================
+let allNews = [];
+
+const newsSources = [
+  { name:"Agence Ecofin", url:"https://www.agenceecofin.com/bourse", desc:"Actualité financière Afrique", icon:"🌍", color:"#1a3c6e" },
+  { name:"Sika Finance", url:"https://www.sikafinance.com/actualites", desc:"Marché BRVM & UEMOA", icon:"📊", color:"#2a5298" },
+  { name:"Fratmat.info", url:"https://www.fratmat.info/economie", desc:"Économie ivoirienne", icon:"🇨🇮", color:"#f4a300" },
+  { name:"Abidjan.net", url:"https://news.abidjan.net/economie", desc:"Actualités Côte d'Ivoire", icon:"📰", color:"#10b981" },
+  { name:"Commodafrica", url:"https://www.commodafrica.com", desc:"Matières premières Afrique", icon:"🌾", color:"#8b5cf6" },
+  { name:"BRVM Officiel", url:"https://www.brvm.org/fr/nouvelles", desc:"Communiqués officiels BRVM", icon:"🏛️", color:"#ef4444" },
+];
+
+// Actualités de démonstration (remplacées par le JSON du script Python)
+const demoNews = [
+  { titre:"Sonatel annonce une hausse de dividende de 12% pour l'exercice 2025", source:"Agence Ecofin", date:"2026-05-28", ticker:"SNTS", categorie:"Dividende", resume:"Le groupe Sonatel, filiale d'Orange pour le Sénégal et la CEDEAO, a annoncé une distribution de dividende record. Le conseil d'administration propose 22 000 FCFA par action.", url:"https://www.agenceecofin.com", impact:"positive" },
+  { titre:"CIE renouvelle sa concession d'électricité pour 15 ans", source:"Fratmat.info", date:"2026-05-27", ticker:"CIEC", categorie:"Stratégie", resume:"La Compagnie Ivoirienne d'Électricité a obtenu le renouvellement de son contrat de concession avec l'État ivoirien jusqu'en 2040, sécurisant ses revenus à long terme.", url:"https://www.fratmat.info", impact:"positive" },
+  { titre:"BRVM : le marché affiche une hausse de 1,2% cette semaine", source:"Sika Finance", date:"2026-05-28", ticker:null, categorie:"Marché", resume:"L'indice BRVM Composite a progressé de 1,2% sur la semaine, porté principalement par les valeurs bancaires et les télécoms.", url:"https://www.sikafinance.com", impact:"positive" },
+  { titre:"PALMCI : production d'huile de palme en hausse de 12%", source:"Agence Ecofin", date:"2026-05-26", ticker:"PALC", categorie:"Résultats", resume:"Palm CI enregistre une production en forte hausse sur les 4 premiers mois de 2026, bénéficiant d'une météo favorable et d'extensions de surfaces plantées.", url:"https://www.agenceecofin.com", impact:"positive" },
+  { titre:"Ecobank CI : ouverture de 15 nouveaux points de service en Côte d'Ivoire", source:"Abidjan.net", date:"2026-05-25", ticker:"ETIT", categorie:"Stratégie", resume:"Ecobank renforce son réseau en Côte d'Ivoire avec 15 nouvelles agences et kiosques, visant à accroître sa part dans le mobile money face à Orange Money.", url:"https://news.abidjan.net", impact:"positive" },
+  { titre:"Orange CI dépasse les 12 millions d'abonnés mobile money", source:"Sika Finance", date:"2026-05-24", ticker:"ORAC", categorie:"Résultats", resume:"Orange Money CI franchit le cap symbolique des 12 millions d'utilisateurs actifs, confirmant sa position de leader dans les paiements numériques en Côte d'Ivoire.", url:"https://www.sikafinance.com", impact:"positive" },
+  { titre:"BRVM : les valeurs agricoles sous pression suite à la chute du cours du cacao", source:"Commodafrica", date:"2026-05-23", ticker:"SIFC", categorie:"Macro", resume:"La correction du cours du cacao sur les marchés internationaux pèse sur les perspectives des entreprises agro-industrielles cotées à la BRVM.", url:"https://www.commodafrica.com", impact:"negative" },
+  { titre:"Coris Bank : résultats semestriels en hausse de 18%", source:"Agence Ecofin", date:"2026-05-22", ticker:"CBIBF", categorie:"Résultats", resume:"Coris Bank International publie des résultats semestriels solides avec une progression du bénéfice net de 18%, portée par la croissance des crédits et des commissions.", url:"https://www.agenceecofin.com", impact:"positive" },
+];
+
+function renderActualites() {
+  // Sources
+  document.getElementById("newsSources").innerHTML = newsSources.map(s => `
+    <a href="${s.url}" target="_blank" rel="noopener" style="text-decoration:none">
+      <div class="card" style="border-top:3px solid $

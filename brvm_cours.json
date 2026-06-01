@@ -1,0 +1,331 @@
+[
+  {
+    "ticker": "ABJC",
+    "price": 3250.0,
+    "var1d": 0.77,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "BICB",
+    "price": 5250.0,
+    "var1d": 0.0,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "BICC",
+    "price": 28300.0,
+    "var1d": 0.17,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "BNBC",
+    "price": 1700.0,
+    "var1d": 6.76,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "BOAB",
+    "price": 8800.0,
+    "var1d": -1.13,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "BOABF",
+    "price": 5600.0,
+    "var1d": -0.26,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "BOAC",
+    "price": 9000.0,
+    "var1d": 1.66,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "BOAM",
+    "price": 5200.0,
+    "var1d": 0.85,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "BOAN",
+    "price": 3730.0,
+    "var1d": -0.81,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "BOAS",
+    "price": 7700.0,
+    "var1d": 0.26,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "CABC",
+    "price": 3500.0,
+    "var1d": -1.01,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "CBIBF",
+    "price": 21500.0,
+    "var1d": -0.23,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "CFAC",
+    "price": 1505.0,
+    "var1d": -0.33,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "CIEC",
+    "price": 4150.0,
+    "var1d": 1.19,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "ECOC",
+    "price": 16290.0,
+    "var1d": -0.24,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "ETIT",
+    "price": 30.0,
+    "var1d": 0.0,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "FTSC",
+    "price": 2340.0,
+    "var1d": 0.0,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "LNBB",
+    "price": 3845.0,
+    "var1d": 0.12,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "NEIC",
+    "price": 2000.0,
+    "var1d": 2.01,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "NSBC",
+    "price": 18000.0,
+    "var1d": 0.0,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "NTLC",
+    "price": 12995.0,
+    "var1d": 1.46,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "ONTBF",
+    "price": 2900.0,
+    "var1d": 0.0,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "ORAC",
+    "price": 16000.0,
+    "var1d": 0.0,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "ORGT",
+    "price": 2650.0,
+    "var1d": 1.14,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "PALC",
+    "price": 7975.0,
+    "var1d": 0.0,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "PRSC",
+    "price": 4100.0,
+    "var1d": -3.24,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "SAFC",
+    "price": 3600.0,
+    "var1d": 0.0,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "SCRC",
+    "price": 2790.0,
+    "var1d": -0.18,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "SDCC",
+    "price": 11025.0,
+    "var1d": 0.0,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "SDSC",
+    "price": 1885.0,
+    "var1d": 3.72,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "SEMC",
+    "price": 1545.0,
+    "var1d": 6.79,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "SGBC",
+    "price": 37000.0,
+    "var1d": 0.0,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "SHEC",
+    "price": 1915.0,
+    "var1d": 0.0,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "SIBC",
+    "price": 8500.0,
+    "var1d": 3.58,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "SICC",
+    "price": 4280.0,
+    "var1d": -0.23,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "SIVC",
+    "price": 2860.0,
+    "var1d": -0.52,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "SLBC",
+    "price": 38000.0,
+    "var1d": -1.31,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "SMBC",
+    "price": 13500.0,
+    "var1d": -0.37,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "SNTS",
+    "price": 28450.0,
+    "var1d": -0.17,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "SOGC",
+    "price": 7450.0,
+    "var1d": 2.53,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "SPHC",
+    "price": 7055.0,
+    "var1d": 2.11,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "STAC",
+    "price": 2815.0,
+    "var1d": -6.57,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "STBC",
+    "price": 21000.0,
+    "var1d": 1.4,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "TTLC",
+    "price": 2850.0,
+    "var1d": 0.0,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "TTLS",
+    "price": 3360.0,
+    "var1d": 0.44,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "UNLC",
+    "price": 57005.0,
+    "var1d": -4.64,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  },
+  {
+    "ticker": "UNXC",
+    "price": 1790.0,
+    "var1d": -0.56,
+    "date": "2026-06-01",
+    "source": "BOA Direct — boaksdirect.com (2026-06-01)"
+  }
+]

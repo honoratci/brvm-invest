@@ -1,0 +1,102 @@
+[
+  {
+    "titre": "SGBC : dividende 2025 de 1 645 FCFA — paiement le 5 août 2026",
+    "source": "BRVM",
+    "date": "2026-06-01",
+    "ticker": "SGBC",
+    "categorie": "Dividende",
+    "resume": "La Société Générale CI versera un dividende de 1 645,78 FCFA par action. Rendement 4,50%.",
+    "url": "https://brvm.org",
+    "impact": "positive"
+  },
+  {
+    "titre": "Sonatel SNTS : forte hausse, cours à 28 450 FCFA, PER 6,88",
+    "source": "Sika Finance",
+    "date": "2026-06-01",
+    "ticker": "SNTS",
+    "categorie": "Marché",
+    "resume": "Sonatel affiche le meilleur rendement BRVM avec dividende 1 740 FCFA. PER très attractif à 6,88.",
+    "url": "https://sikafinance.com",
+    "impact": "positive"
+  },
+  {
+    "titre": "SIBC : chute de -5,64 % — vente massive sur le titre",
+    "source": "BRVM",
+    "date": "2026-06-01",
+    "ticker": "SIBC",
+    "categorie": "Marché",
+    "resume": "La SIB enregistre la plus forte baisse de la séance. Volume échangé : 4 940 titres. Prudence.",
+    "url": "https://brvm.org",
+    "impact": "negative"
+  },
+  {
+    "titre": "Coris Bank CBIBF : +99% sur l'année, nouveau sommet historique",
+    "source": "African Markets",
+    "date": "2026-06-01",
+    "ticker": "CBIBF",
+    "categorie": "Marché",
+    "resume": "Coris Bank affiche la plus forte progression annuelle de la BRVM avec +99,12% sur un an.",
+    "url": "https://african-markets.com",
+    "impact": "positive"
+  },
+  {
+    "titre": "Orange CI ORAC : dividende 660 FCFA le 4 juin 2026",
+    "source": "BRVM",
+    "date": "2026-06-01",
+    "ticker": "ORAC",
+    "categorie": "Dividende",
+    "resume": "Orange CI détache son dividende de 660 FCFA le 4 juin 2026. Rendement 4,20%.",
+    "url": "https://brvm.org",
+    "impact": "positive"
+  },
+  {
+    "titre": "TotalEnergies CI TTLC : résultat net stable à 9 milliards FCFA",
+    "source": "Sika Finance",
+    "date": "2026-06-01",
+    "ticker": "TTLC",
+    "categorie": "Résultats",
+    "resume": "TotalEnergies CI maintient son résultat net à 9 milliards FCFA malgré la pression sur les marges.",
+    "url": "https://sikafinance.com",
+    "impact": "neutral"
+  },
+  {
+    "titre": "Bridge Bank : introduction en bourse BRVM le 31 août 2026",
+    "source": "African Markets",
+    "date": "2026-06-01",
+    "ticker": null,
+    "categorie": "Marché",
+    "resume": "Bridge Bank Group prépare son entrée à la BRVM. Période de souscription ouverte.",
+    "url": "https://african-markets.com",
+    "impact": "positive"
+  },
+  {
+    "titre": "PALM CI PALC : production d'huile de palme en hausse de 12%",
+    "source": "Agence Ecofin",
+    "date": "2026-06-01",
+    "ticker": "PALC",
+    "categorie": "Résultats",
+    "resume": "Palm CI enregistre une production en forte hausse sur les 4 premiers mois de 2026.",
+    "url": "https://agenceecofin.com",
+    "impact": "positive"
+  },
+  {
+    "titre": "SETAO CI STAC : +135% sur l'année, plus forte hausse BRVM",
+    "source": "BRVM",
+    "date": "2026-06-01",
+    "ticker": "STAC",
+    "categorie": "Marché",
+    "resume": "SETAO CI s'impose comme le titre le plus performant de la BRVM en 2026.",
+    "url": "https://brvm.org",
+    "impact": "positive"
+  },
+  {
+    "titre": "Ecobank CI ECOC : dividende 781 FCFA payé le 26 mai 2026",
+    "source": "BRVM",
+    "date": "2026-05-15",
+    "ticker": "ECOC",
+    "categorie": "Dividende",
+    "resume": "Ecobank CI a distribué son dividende 2025. Rendement 4,79%.",
+    "url": "https://brvm.org",
+    "impact": "positive"
+  }
+]
