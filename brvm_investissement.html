@@ -691,6 +691,70 @@
       </div>
     </div>
 
+    <!-- ── SIGNAUX ANALYSTE ─────────────────────────────────────────────── -->
+    <div class="card" style="margin-bottom:20px;border-top:4px solid #f59e0b">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+        <div>
+          <h3 style="font-size:1rem;color:var(--text);margin-bottom:2px">⚡ Signaux Analyste — Recommandations Externes</h3>
+          <p style="font-size:0.78rem;color:var(--text-muted)">Prix conseillé, cible de valorisation et convergence avec nos indicateurs</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="generateMyRecommendations()" style="background:linear-gradient(135deg,#1a3c6e,#2a5298)">🤖 Générer mes recommandations</button>
+          <button class="btn btn-outline btn-sm" onclick="toggleAddSignal()">+ Saisir signal externe</button>
+          <button class="btn btn-outline btn-sm" onclick="renderAnalystSignals()">🔄 Actualiser</button>
+        </div>
+      </div>
+
+      <!-- Formulaire d'ajout -->
+      <div id="addSignalForm" style="display:none;background:var(--bg);border-radius:10px;padding:16px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px">
+          <div>
+            <label style="font-size:0.78rem;color:var(--text-muted)">Ticker</label>
+            <select id="saTicker" class="filter-select" style="width:100%"></select>
+          </div>
+          <div>
+            <label style="font-size:0.78rem;color:var(--text-muted)">Stratégie</label>
+            <select id="saStrategie" class="filter-select" style="width:100%">
+              <option value="CROISSANCE">📈 Croissance</option>
+              <option value="RENTE">💰 Rente</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.78rem;color:var(--text-muted)">Prix conseillé (FCFA)</label>
+            <input type="number" id="saPrix" class="filter-select" style="width:100%" placeholder="ex: 32000">
+          </div>
+          <div>
+            <label style="font-size:0.78rem;color:var(--text-muted)">Cible valorisation</label>
+            <input type="number" id="saCible" class="filter-select" style="width:100%" placeholder="ex: 37000">
+          </div>
+          <div>
+            <label style="font-size:0.78rem;color:var(--text-muted)">Cible 12 mois</label>
+            <input type="number" id="saCible12m" class="filter-select" style="width:100%" placeholder="ex: 40000">
+          </div>
+          <div>
+            <label style="font-size:0.78rem;color:var(--text-muted)">Année cible valorisation</label>
+            <input type="number" id="saAnnee" class="filter-select" style="width:100%" placeholder="ex: 2027">
+          </div>
+          <div>
+            <label style="font-size:0.78rem;color:var(--text-muted)">Coach / Source</label>
+            <input type="text" id="saCoach" class="filter-select" style="width:100%" placeholder="ex: Brice KOUAO">
+          </div>
+          <div>
+            <label style="font-size:0.78rem;color:var(--text-muted)">Date du signal</label>
+            <input type="date" id="saDate" class="filter-select" style="width:100%">
+          </div>
+          <div style="grid-column:1/-1">
+            <label style="font-size:0.78rem;color:var(--text-muted)">Notes (optionnel)</label>
+            <input type="text" id="saNotes" class="filter-select" style="width:100%" placeholder="ex: Potentiel de gain après encaissement du dividende">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="saveAnalystSignal()">💾 Enregistrer</button>
+        <button class="btn btn-outline btn-sm" onclick="toggleAddSignal()">Annuler</button>
+      </div>
+
+      <div id="analystSignals"></div>
+    </div>
+
     <!-- Top opportunités de trading -->
     <div class="card" style="margin-bottom:20px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
@@ -946,8 +1010,7 @@
       <div id="pdfResult"></div>
     </div>
 
-    <!-- Dernière mise à jour -->
-    <div class="card" style="margin-top:20px;background:#1a3c6e;color:white">
+    <!-- Dernière mise à jour : 18/06/2026<div class="card" style="margin-top:20px;background:#1a3c6e;color:white">
       <div style="display:flex;align-items:center;gap:16px">
         <span style="font-size:2rem">🕐</span>
         <div>
@@ -994,63 +1057,63 @@
 const stocks = [
   // Finance / Banques
   // ── Finance / Banques ──────────────────────────────────────────────────────
-  { ticker:"SGBC",  name:"Société Générale Côte d'Ivoire",    sector:"Finance",      country:"CI", price:37000.0,  var1d:0.0,  per:11.23, div:4.50, capMkt:732,  vol:4227,  beta:0.8,  per5y:12.5, notes:"Solide bancaire, dividendes réguliers — Prestige" },
-  { ticker:"ECOC",  name:"Ecobank Côte d'Ivoire",             sector:"Finance",      country:"CI", price:16290.0,  var1d:-0.24,  per:14.14, div:4.79, capMkt:391,  vol:148,   beta:0.9,  per5y:13.0, notes:"Filiale ivoirienne Ecobank — Prestige" },
-  { ticker:"ETIT",  name:"Ecobank Transnational Inc.",         sector:"Finance",      country:"TG", price:30.0,     var1d:0.0, per:1.52,  div:2.09, capMkt:980,  vol:409392,beta:0.9,  per5y:3.0,  notes:"Holding panafricain, très liquide, faible cours unitaire" },
-  { ticker:"SIBC",  name:"Société Ivoirienne de Banque",      sector:"Finance",      country:"CI", price:8500.0,   var1d:3.58, per:13.85, div:4.29, capMkt:140,  vol:4940,  beta:0.78, per5y:12.0, notes:"Soutenu par CIH Maroc — Prestige" },
-  { ticker:"NSBC",  name:"NSIA Banque Côte d'Ivoire",         sector:"Finance",      country:"CI", price:18000.0,  var1d:0.0,  per:10.94, div:3.71, capMkt:270,  vol:1697,  beta:0.72, per5y:12.0, notes:"Croissance du crédit soutenue" },
-  { ticker:"CBIBF", name:"Coris Bank International",          sector:"Finance",      country:"BF", price:21500.0,  var1d:-0.23,  per:10.49, div:2.59, capMkt:429,  vol:226,   beta:0.65, per5y:12.0, notes:"Très forte progression 2025, Burkina Faso" },
-  { ticker:"BOAB",  name:"Bank of Africa Bénin",              sector:"Finance",      country:"BJ", price:8800.0,   var1d:-1.13, per:17.95, div:6.57, capMkt:150,  vol:4659,  beta:0.75, per5y:14.0, notes:"Filiale BOA Bénin" },
-  { ticker:"BOAC",  name:"Bank of Africa Côte d'Ivoire",      sector:"Finance",      country:"CI", price:9000.0,   var1d:1.66, per:11.02, div:6.77, capMkt:148,  vol:4991,  beta:0.8,  per5y:11.5, notes:"Filiale BOA CI" },
-  { ticker:"BOABF", name:"Bank of Africa Burkina Faso",       sector:"Finance",      country:"BF", price:5600.0,   var1d:-0.26,  per:12.57, div:7.22, capMkt:92,   vol:1460,  beta:0.7,  per5y:12.0, notes:"Filiale BOA Burkina Faso" },
-  { ticker:"BOAM",  name:"Bank of Africa Mali",               sector:"Finance",      country:"ML", price:5200.0,   var1d:0.85,  per:12.39, div:4.74, capMkt:84,   vol:7441,  beta:0.72, per5y:11.5, notes:"Filiale BOA Mali" },
-  { ticker:"BOAS",  name:"Bank of Africa Sénégal",            sector:"Finance",      country:"SN", price:7700.0,   var1d:0.26, per:12.73, div:4.52, capMkt:130,  vol:25990, beta:0.78, per5y:12.5, notes:"Filiale BOA Sénégal" },
-  { ticker:"BOAN",  name:"Bank of Africa Niger",              sector:"Finance",      country:"NG", price:3730.0,   var1d:-0.81,  per:190.08,div:5.59, capMkt:63,   vol:2678,  beta:0.85, per5y:15.0, notes:"Filiale BOA Niger" },
-  { ticker:"BICC",  name:"BICI Côte d'Ivoire",                sector:"Finance",      country:"CI", price:28300.0,  var1d:0.17,  per:12.55, div:3.02, capMkt:330,  vol:117,   beta:0.75, per5y:13.0, notes:"Banque internationale CI" },
-  { ticker:"ORGT",  name:"Oragroup Togo",                     sector:"Finance",      country:"TG", price:2650.0,   var1d:1.14,  per:8.79,  div:2.17, capMkt:46,   vol:2192,  beta:0.88, per5y:9.5,  notes:"Groupe bancaire panafricain" },
+  { ticker:"SGBC",  name:"Société Générale Côte d'Ivoire",    sector:"Finance",      country:"CI", price:39000.0,  var1d:-0.1,  per:11.23, div:4.50, capMkt:732,  vol:4227,  beta:0.8,  per5y:12.5, notes:"Solide bancaire, dividendes réguliers — Prestige" },
+  { ticker:"ECOC",  name:"Ecobank Côte d'Ivoire",             sector:"Finance",      country:"CI", price:16900.0,  var1d:-0.03,  per:14.14, div:4.79, capMkt:391,  vol:148,   beta:0.9,  per5y:13.0, notes:"Filiale ivoirienne Ecobank — Prestige" },
+  { ticker:"ETIT",  name:"Ecobank Transnational Inc.",         sector:"Finance",      country:"TG", price:40.0,     var1d:5.26, per:1.52,  div:2.09, capMkt:980,  vol:409392,beta:0.9,  per5y:3.0,  notes:"Holding panafricain, très liquide, faible cours unitaire" },
+  { ticker:"SIBC",  name:"Société Ivoirienne de Banque",      sector:"Finance",      country:"CI", price:8895.0,   var1d:0.06, per:13.85, div:4.29, capMkt:140,  vol:4940,  beta:0.78, per5y:12.0, notes:"Soutenu par CIH Maroc — Prestige" },
+  { ticker:"NSBC",  name:"NSIA Banque Côte d'Ivoire",         sector:"Finance",      country:"CI", price:19650.0,  var1d:0.23,  per:10.94, div:3.71, capMkt:270,  vol:1697,  beta:0.72, per5y:12.0, notes:"Croissance du crédit soutenue" },
+  { ticker:"CBIBF", name:"Coris Bank International",          sector:"Finance",      country:"BF", price:22195.0,  var1d:0.25,  per:10.49, div:2.59, capMkt:429,  vol:226,   beta:0.65, per5y:12.0, notes:"Très forte progression 2025, Burkina Faso" },
+  { ticker:"BOAB",  name:"Bank of Africa Bénin",              sector:"Finance",      country:"BJ", price:9000.0,   var1d:-1.1, per:17.95, div:6.57, capMkt:150,  vol:4659,  beta:0.75, per5y:14.0, notes:"Filiale BOA Bénin" },
+  { ticker:"BOAC",  name:"Bank of Africa Côte d'Ivoire",      sector:"Finance",      country:"CI", price:9395.0,   var1d:1.12, per:11.02, div:6.77, capMkt:148,  vol:4991,  beta:0.8,  per5y:11.5, notes:"Filiale BOA CI" },
+  { ticker:"BOABF", name:"Bank of Africa Burkina Faso",       sector:"Finance",      country:"BF", price:5850.0,   var1d:2.54,  per:12.57, div:7.22, capMkt:92,   vol:1460,  beta:0.7,  per5y:12.0, notes:"Filiale BOA Burkina Faso" },
+  { ticker:"BOAM",  name:"Bank of Africa Mali",               sector:"Finance",      country:"ML", price:5000.0,   var1d:0.0,  per:12.39, div:4.74, capMkt:84,   vol:7441,  beta:0.72, per5y:11.5, notes:"Filiale BOA Mali" },
+  { ticker:"BOAS",  name:"Bank of Africa Sénégal",            sector:"Finance",      country:"SN", price:7350.0,   var1d:1.22, per:12.73, div:4.52, capMkt:130,  vol:25990, beta:0.78, per5y:12.5, notes:"Filiale BOA Sénégal" },
+  { ticker:"BOAN",  name:"Bank of Africa Niger",              sector:"Finance",      country:"NG", price:4185.0,   var1d:-0.12,  per:190.08,div:5.59, capMkt:63,   vol:2678,  beta:0.85, per5y:15.0, notes:"Filiale BOA Niger" },
+  { ticker:"BICC",  name:"BICI Côte d'Ivoire",                sector:"Finance",      country:"CI", price:29000.0,  var1d:0.69,  per:12.55, div:3.02, capMkt:330,  vol:117,   beta:0.75, per5y:13.0, notes:"Banque internationale CI" },
+  { ticker:"ORGT",  name:"Oragroup Togo",                     sector:"Finance",      country:"TG", price:2685.0,   var1d:0.37,  per:8.79,  div:2.17, capMkt:46,   vol:2192,  beta:0.88, per5y:9.5,  notes:"Groupe bancaire panafricain" },
   { ticker:"BACI",  name:"Banque Atlantique Côte d'Ivoire",   sector:"Finance",      country:"CI", price:5200,   var1d:0.8,   per:9.5,   div:6.1,  capMkt:156,  vol:320,   beta:0.7,  per5y:10.8, notes:"Bon rendement dividende" },
 
   // ── Télécoms ───────────────────────────────────────────────────────────────
-  { ticker:"SNTS",  name:"Sonatel (Orange Sénégal)",          sector:"Telecom",      country:"SN", price:28450.0,  var1d:-0.17, per:6.88,  div:6.12, capMkt:1707, vol:1415,  beta:0.6,  per5y:8.5,  notes:"Leader télécoms UEMOA, dividende exceptionnel — Prestige" },
-  { ticker:"ORAC",  name:"Orange Côte d'Ivoire",              sector:"Telecom",      country:"CI", price:16000.0,  var1d:0.0,  per:14.10, div:4.20, capMkt:1256, vol:348,   beta:0.55, per5y:14.5, notes:"Fort dividende, croissance data mobile — Prestige" },
-  { ticker:"ONTBF", name:"ONATEL Burkina Faso",               sector:"Telecom",      country:"BF", price:2900.0,   var1d:0.0,  per:13.37, div:6.64, capMkt:171,  vol:1805,  beta:0.72, per5y:12.5, notes:"Télécom national Burkina — Prestige" },
+  { ticker:"SNTS",  name:"Sonatel (Orange Sénégal)",          sector:"Telecom",      country:"SN", price:28900.0,  var1d:2.12, per:6.88,  div:6.12, capMkt:1707, vol:1415,  beta:0.6,  per5y:8.5,  notes:"Leader télécoms UEMOA, dividende exceptionnel — Prestige" },
+  { ticker:"ORAC",  name:"Orange Côte d'Ivoire",              sector:"Telecom",      country:"CI", price:16700.0,  var1d:-0.6,  per:14.10, div:4.20, capMkt:1256, vol:348,   beta:0.55, per5y:14.5, notes:"Fort dividende, croissance data mobile — Prestige" },
+  { ticker:"ONTBF", name:"ONATEL Burkina Faso",               sector:"Telecom",      country:"BF", price:2800.0,   var1d:0.36,  per:13.37, div:6.64, capMkt:171,  vol:1805,  beta:0.72, per5y:12.5, notes:"Télécom national Burkina — Prestige" },
 
   // ── Agriculture ────────────────────────────────────────────────────────────
-  { ticker:"PALC",  name:"Palm CI — Palmci",                  sector:"Agriculture",  country:"CI", price:7975.0,   var1d:0.0,  per:7.78,  div:5.79, capMkt:234,  vol:2077,  beta:1.1,  per5y:9.5,  notes:"Huile de palme, forte demande — Prestige" },
-  { ticker:"SPHC",  name:"SAPH CI",                           sector:"Agriculture",  country:"CI", price:7055.0,   var1d:2.11,  per:7.11,  div:4.66, capMkt:152,  vol:866,   beta:0.95, per5y:8.2,  notes:"Hévéaculture — Prestige" },
+  { ticker:"PALC",  name:"Palm CI — Palmci",                  sector:"Agriculture",  country:"CI", price:8700.0,   var1d:0.0,  per:7.78,  div:5.79, capMkt:234,  vol:2077,  beta:1.1,  per5y:9.5,  notes:"Huile de palme, forte demande — Prestige" },
+  { ticker:"SPHC",  name:"SAPH CI",                           sector:"Agriculture",  country:"CI", price:7685.0,   var1d:-0.07,  per:7.11,  div:4.66, capMkt:152,  vol:866,   beta:0.95, per5y:8.2,  notes:"Hévéaculture — Prestige" },
   { ticker:"SIFC",  name:"SIFCA Group",                       sector:"Agriculture",  country:"CI", price:5700,   var1d:-0.4,  per:11.5,  div:4.2,  capMkt:684,  vol:580,   beta:1.05, per5y:12.3, notes:"Diversifié agro (hévéa, palme, sucre)" },
-  { ticker:"SCRC",  name:"Sucrivoire CI",                     sector:"Agriculture",  country:"CI", price:2790.0,   var1d:-0.18, per:0.0,   div:1.62, capMkt:50,   vol:17388, beta:1.2,  per5y:0.0,  notes:"Canne à sucre, très volatile" },
-  { ticker:"SOGC",  name:"SOGB CI",                           sector:"Agriculture",  country:"CI", price:7450.0,   var1d:2.53,  per:12.79, div:7.14, capMkt:111,  vol:608,   beta:0.9,  per5y:13.0, notes:"Caoutchouc naturel, bon dividende" },
+  { ticker:"SCRC",  name:"Sucrivoire CI",                     sector:"Agriculture",  country:"CI", price:3280.0,   var1d:0.0, per:0.0,   div:1.62, capMkt:50,   vol:17388, beta:1.2,  per5y:0.0,  notes:"Canne à sucre, très volatile" },
+  { ticker:"SOGC",  name:"SOGB CI",                           sector:"Agriculture",  country:"CI", price:8400.0,   var1d:0.0,  per:12.79, div:7.14, capMkt:111,  vol:608,   beta:0.9,  per5y:13.0, notes:"Caoutchouc naturel, bon dividende" },
 
   // ── Industrie ──────────────────────────────────────────────────────────────
-  { ticker:"NTLC",  name:"Nestlé Côte d'Ivoire",             sector:"Industrie",    country:"CI", price:12995.0,  var1d:1.46,  per:15.58, div:5.55, capMkt:156,  vol:653,   beta:0.7,  per5y:16.0, notes:"Agroalimentaire — Prestige" },
-  { ticker:"SMBC",  name:"SMB CI",                            sector:"Industrie",    country:"CI", price:13500.0,  var1d:-0.37,  per:7.75,  div:4.74, capMkt:117,  vol:275,   beta:1.05, per5y:8.5,  notes:"Bois et matériaux — Prestige" },
-  { ticker:"SLBC",  name:"SOLIBRA CI",                        sector:"Industrie",    country:"CI", price:38000.0,  var1d:-1.31,  per:13.67, div:2.82, capMkt:547,  vol:251,   beta:0.5,  per5y:15.0, notes:"Brasserie leader CI, faible liquidité" },
-  { ticker:"STBC",  name:"SITAB CI — Sté Ivoirienne de Tabac",sector:"Industrie",   country:"CI", price:21000.0,  var1d:1.4,  per:10.57, div:9.84, capMkt:191,  vol:242,   beta:0.65, per5y:11.0, notes:"Dividende élevé, secteur régulé" },
-  { ticker:"NEIC",  name:"NEI-CEDA CI",                       sector:"Industrie",    country:"CI", price:2000.0,   var1d:2.01, per:11.91, div:4.30, capMkt:19,   vol:1725,  beta:1.2,  per5y:13.0, notes:"Édition, faible capitalisation" },
-  { ticker:"CABC",  name:"SICABLE CI",                        sector:"Industrie",    country:"CI", price:3500.0,   var1d:-1.01,  per:15.22, div:3.05, capMkt:74,   vol:210,   beta:1.1,  per5y:16.0, notes:"Câblerie industrielle" },
-  { ticker:"STAC",  name:"SETAO CI",                          sector:"Industrie",    country:"CI", price:2815.0,   var1d:-6.57,  per:0.0,   div:2.12, capMkt:47,   vol:13320, beta:1.3,  per5y:0.0,  notes:"Très forte hausse du jour" },
-  { ticker:"SEMC",  name:"Eviosys Packaging SIEM CI",         sector:"Industrie",    country:"CI", price:1545.0,   var1d:6.79, per:35.22, div:0.99, capMkt:21,   vol:4828,  beta:1.2,  per5y:30.0, notes:"Emballage industriel" },
-  { ticker:"FTSC",  name:"FILTISAC CI",                       sector:"Industrie",    country:"CI", price:2340.0,   var1d:0.0,  per:1.74,  div:75.07,capMkt:46,   vol:665,   beta:0.9,  per5y:2.0,  notes:"Filtres industriels, rendement exceptionnel" },
-  { ticker:"SIVC",  name:"ERIUM CI (ex Air Liquide CI)",      sector:"Industrie",    country:"CI", price:2860.0,   var1d:-0.52,  per:0.0,   div:0.0,  capMkt:43,   vol:1098,  beta:1.0,  per5y:0.0,  notes:"Gaz industriels" },
-  { ticker:"UNLC",  name:"Unilever Côte d'Ivoire",            sector:"Industrie",    country:"CI", price:57005.0,  var1d:-4.64, per:0.0,   div:0.0,  capMkt:674,  vol:17,    beta:0.8,  per5y:0.0,  notes:"Biens de grande consommation, très peu liquide" },
+  { ticker:"NTLC",  name:"Nestlé Côte d'Ivoire",             sector:"Industrie",    country:"CI", price:14760.0,  var1d:0.95,  per:15.58, div:5.55, capMkt:156,  vol:653,   beta:0.7,  per5y:16.0, notes:"Agroalimentaire — Prestige" },
+  { ticker:"SMBC",  name:"SMB CI",                            sector:"Industrie",    country:"CI", price:17000.0,  var1d:3.6,  per:7.75,  div:4.74, capMkt:117,  vol:275,   beta:1.05, per5y:8.5,  notes:"Bois et matériaux — Prestige" },
+  { ticker:"SLBC",  name:"SOLIBRA CI",                        sector:"Industrie",    country:"CI", price:38795.0,  var1d:0.4,  per:13.67, div:2.82, capMkt:547,  vol:251,   beta:0.5,  per5y:15.0, notes:"Brasserie leader CI, faible liquidité" },
+  { ticker:"STBC",  name:"SITAB CI — Sté Ivoirienne de Tabac",sector:"Industrie",   country:"CI", price:24500.0,  var1d:-0.31,  per:10.57, div:9.84, capMkt:191,  vol:242,   beta:0.65, per5y:11.0, notes:"Dividende élevé, secteur régulé" },
+  { ticker:"NEIC",  name:"NEI-CEDA CI",                       sector:"Industrie",    country:"CI", price:2350.0,   var1d:-0.85, per:11.91, div:4.30, capMkt:19,   vol:1725,  beta:1.2,  per5y:13.0, notes:"Édition, faible capitalisation" },
+  { ticker:"CABC",  name:"SICABLE CI",                        sector:"Industrie",    country:"CI", price:4190.0,   var1d:0.0,  per:15.22, div:3.05, capMkt:74,   vol:210,   beta:1.1,  per5y:16.0, notes:"Câblerie industrielle" },
+  { ticker:"STAC",  name:"SETAO CI",                          sector:"Industrie",    country:"CI", price:3490.0,   var1d:0.29,  per:0.0,   div:2.12, capMkt:47,   vol:13320, beta:1.3,  per5y:0.0,  notes:"Très forte hausse du jour" },
+  { ticker:"SEMC",  name:"Eviosys Packaging SIEM CI",         sector:"Industrie",    country:"CI", price:1540.0,   var1d:-1.3, per:35.22, div:0.99, capMkt:21,   vol:4828,  beta:1.2,  per5y:30.0, notes:"Emballage industriel" },
+  { ticker:"FTSC",  name:"FILTISAC CI",                       sector:"Industrie",    country:"CI", price:1970.0,   var1d:1.52,  per:1.74,  div:75.07,capMkt:46,   vol:665,   beta:0.9,  per5y:2.0,  notes:"Filtres industriels, rendement exceptionnel" },
+  { ticker:"SIVC",  name:"ERIUM CI (ex Air Liquide CI)",      sector:"Industrie",    country:"CI", price:2455.0,   var1d:-4.66,  per:0.0,   div:0.0,  capMkt:43,   vol:1098,  beta:1.0,  per5y:0.0,  notes:"Gaz industriels" },
+  { ticker:"UNLC",  name:"Unilever Côte d'Ivoire",            sector:"Industrie",    country:"CI", price:56020.0,  var1d:-0.75, per:0.0,   div:0.0,  capMkt:674,  vol:17,    beta:0.8,  per5y:0.0,  notes:"Biens de grande consommation, très peu liquide" },
 
   // ── Distribution & Commerce ────────────────────────────────────────────────
-  { ticker:"CFAC",  name:"CFAO Motors CI",                    sector:"Distribution", country:"CI", price:1505.0,   var1d:-0.33,  per:57.39, div:0.47, capMkt:123,  vol:725,   beta:0.95, per5y:50.0, notes:"Distribution automobile" },
-  { ticker:"SDSC",  name:"Africa Global Logistics CI",        sector:"Distribution", country:"CI", price:1885.0,   var1d:3.72, per:4.37,  div:5.44, capMkt:28,   vol:1826,  beta:1.1,  per5y:5.0,  notes:"Logistique & transport" },
-  { ticker:"ABJC",  name:"Servair Abidjan CI",                sector:"Distribution", country:"CI", price:3250.0,   var1d:0.77,  per:23.61, div:7.16, capMkt:49,   vol:914,   beta:0.9,  per5y:24.0, notes:"Services aéroportuaires" },
-  { ticker:"BNBC",  name:"Bernabé CI",                        sector:"Distribution", country:"CI", price:1700.0,   var1d:6.76, per:443.71,div:10.03,capMkt:25,   vol:447,   beta:1.0,  per5y:300.0,notes:"Distribution BTP, PER anormal" },
-  { ticker:"PRSC",  name:"Tractafric Motors CI",              sector:"Distribution", country:"CI", price:4100.0,   var1d:-3.24,  per:19.33, div:4.08, capMkt:67,   vol:85,    beta:1.1,  per5y:20.0, notes:"Distribution engins et véhicules" },
-  { ticker:"UNXC",  name:"UNIWAX CI",                         sector:"Distribution", country:"CI", price:1790.0,   var1d:-0.56, per:0.0,   div:3.41, capMkt:27,   vol:5051,  beta:1.0,  per5y:0.0,  notes:"Textile, imprimés" },
-  { ticker:"LNBB",  name:"Loterie Nationale du Bénin",        sector:"Distribution", country:"BJ", price:3845.0,   var1d:0.12,  per:17.26, div:6.90, capMkt:48,   vol:306,   beta:0.9,  per5y:18.0, notes:"Jeux et loterie" },
+  { ticker:"CFAC",  name:"CFAO Motors CI",                    sector:"Distribution", country:"CI", price:1750.0,   var1d:0.0,  per:57.39, div:0.47, capMkt:123,  vol:725,   beta:0.95, per5y:50.0, notes:"Distribution automobile" },
+  { ticker:"SDSC",  name:"Africa Global Logistics CI",        sector:"Distribution", country:"CI", price:2455.0,   var1d:-1.79, per:4.37,  div:5.44, capMkt:28,   vol:1826,  beta:1.1,  per5y:5.0,  notes:"Logistique & transport" },
+  { ticker:"ABJC",  name:"Servair Abidjan CI",                sector:"Distribution", country:"CI", price:3275.0,   var1d:2.33,  per:23.61, div:7.16, capMkt:49,   vol:914,   beta:0.9,  per5y:24.0, notes:"Services aéroportuaires" },
+  { ticker:"BNBC",  name:"Bernabé CI",                        sector:"Distribution", country:"CI", price:1985.0,   var1d:0.76, per:443.71,div:10.03,capMkt:25,   vol:447,   beta:1.0,  per5y:300.0,notes:"Distribution BTP, PER anormal" },
+  { ticker:"PRSC",  name:"Tractafric Motors CI",              sector:"Distribution", country:"CI", price:4650.0,   var1d:-1.18,  per:19.33, div:4.08, capMkt:67,   vol:85,    beta:1.1,  per5y:20.0, notes:"Distribution engins et véhicules" },
+  { ticker:"UNXC",  name:"UNIWAX CI",                         sector:"Distribution", country:"CI", price:1825.0,   var1d:-7.36, per:0.0,   div:3.41, capMkt:27,   vol:5051,  beta:1.0,  per5y:0.0,  notes:"Textile, imprimés" },
+  { ticker:"LNBB",  name:"Loterie Nationale du Bénin",        sector:"Distribution", country:"BJ", price:4400.0,   var1d:1.14,  per:17.26, div:6.90, capMkt:48,   vol:306,   beta:0.9,  per5y:18.0, notes:"Jeux et loterie" },
 
   // ── Énergie & Utilities ────────────────────────────────────────────────────
-  { ticker:"TTLC",  name:"TotalEnergies Marketing CI",        sector:"Energie",      country:"CI", price:2850.0,   var1d:0.0, per:19.89, div:6.82, capMkt:172,  vol:693,   beta:0.88, per5y:18.0, notes:"Distribution carburants CI — Prestige" },
-  { ticker:"TTLS",  name:"TotalEnergies Marketing SN",        sector:"Energie",      country:"SN", price:3360.0,   var1d:0.44,  per:15.38, div:6.95, capMkt:192,  vol:1726,  beta:0.85, per5y:14.5, notes:"Distribution carburants SN — Prestige" },
-  { ticker:"SHEC",  name:"Vivo Energy CI",                    sector:"Energie",      country:"CI", price:1915.0,   var1d:0.0, per:19.96, div:3.94, capMkt:114,  vol:1531,  beta:0.95, per5y:20.0, notes:"Distribution carburants ex-Shell CI" },
-  { ticker:"CIEC",  name:"CIE — Compagnie Ivoirienne d'Élec.",sector:"Energie",      country:"CI", price:4150.0,   var1d:1.19, per:17.11, div:3.95, capMkt:480,  vol:12278, beta:0.7,  per5y:18.0, notes:"Électricité concession — Services publics" },
-  { ticker:"SDCC",  name:"SODECI — Sté Dist. Eau CI",         sector:"Energie",      country:"CI", price:11025.0,  var1d:0.0,  per:16.99, div:3.17, capMkt:133,  vol:367,   beta:0.62, per5y:17.0, notes:"Eau potable, monopole régulé" },
-  { ticker:"SAFC",  name:"SAFCA CI",                          sector:"Energie",      country:"CI", price:3600.0,   var1d:0.0, per:0.0,   div:0.0,  capMkt:54,   vol:1988,  beta:1.0,  per5y:0.0,  notes:"Financement automobile" },
+  { ticker:"TTLC",  name:"TotalEnergies Marketing CI",        sector:"Energie",      country:"CI", price:2880.0,   var1d:3.4, per:19.89, div:6.82, capMkt:172,  vol:693,   beta:0.88, per5y:18.0, notes:"Distribution carburants CI — Prestige" },
+  { ticker:"TTLS",  name:"TotalEnergies Marketing SN",        sector:"Energie",      country:"SN", price:3795.0,   var1d:1.2,  per:15.38, div:6.95, capMkt:192,  vol:1726,  beta:0.85, per5y:14.5, notes:"Distribution carburants SN — Prestige" },
+  { ticker:"SHEC",  name:"Vivo Energy CI",                    sector:"Energie",      country:"CI", price:2170.0,   var1d:0.0, per:19.96, div:3.94, capMkt:114,  vol:1531,  beta:0.95, per5y:20.0, notes:"Distribution carburants ex-Shell CI" },
+  { ticker:"CIEC",  name:"CIE — Compagnie Ivoirienne d'Élec.",sector:"Energie",      country:"CI", price:5300.0,   var1d:0.66, per:17.11, div:3.95, capMkt:480,  vol:12278, beta:0.7,  per5y:18.0, notes:"Électricité concession — Services publics" },
+  { ticker:"SDCC",  name:"SODECI — Sté Dist. Eau CI",         sector:"Energie",      country:"CI", price:12100.0,  var1d:0.83,  per:16.99, div:3.17, capMkt:133,  vol:367,   beta:0.62, per5y:17.0, notes:"Eau potable, monopole régulé" },
+  { ticker:"SAFC",  name:"SAFCA CI",                          sector:"Energie",      country:"CI", price:4690.0,   var1d:-1.07, per:0.0,   div:0.0,  capMkt:54,   vol:1988,  beta:1.0,  per5y:0.0,  notes:"Financement automobile" },
 ];
 
 // ==================== CALCUL SCORE ====================
@@ -1139,7 +1202,7 @@ window.onload = async function () {
       "linear-gradient(135deg,#064e3b,#059669)";
   } else {
     document.getElementById("lastUpdate").textContent =
-      "✅ BOA Direct — 01/06/2026 à 16:26" + new Date().toLocaleDateString("fr-FR",
+      "Mis à jour le 30/06/2026 à 09:22 — Dépôt manuel — vendredi 29 mai 2026" + new Date().toLocaleDateString("fr-FR",
         { day:"2-digit", month:"short", year:"numeric" });
   }
   renderStockTable();
@@ -1156,6 +1219,7 @@ window.onload = async function () {
   loadLastMaj();
   seedHistory();
   populateTASelects();
+  renderTicker();
 
   // Auto-chargement depuis brvm_cours.json (GitHub Pages / serveur HTTP)
   // Si les prix sont mis à jour, on re-rend tout automatiquement
@@ -2185,6 +2249,100 @@ function refreshAll(source) {
   }
 
   console.log(`[refreshAll] ${source || "─"} → historique mis à jour, ${stocks.length} titres synchronisés`);
+  renderTicker();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  BANDEAU DÉFILANT — COURS EN TEMPS RÉEL (tous les 47 titres BRVM)
+// ══════════════════════════════════════════════════════════════════════════════
+function renderTicker() {
+  // ── CSS (injecté une seule fois) ──────────────────────────────────────────
+  if (!document.getElementById('ticker-style')) {
+    const st = document.createElement('style');
+    st.id = 'ticker-style';
+    st.textContent = `
+      #liveTicker {
+        background: linear-gradient(90deg,#0f1c2e,#1a3c6e 30%,#0f1c2e);
+        color: #e2e8f0; overflow: hidden; padding: 7px 0;
+        font-size: 0.80rem; font-family: 'Segoe UI', monospace;
+        white-space: nowrap; border-bottom: 2px solid #2a5298;
+        position: relative; z-index: 50; user-select: none;
+      }
+      #liveTicker::before {
+        content: " BRVM LIVE ";
+        background: #f59e0b; color: #000; font-weight: 800;
+        padding: 2px 10px; margin-right: 16px; border-radius: 4px;
+        font-size: 0.72rem; letter-spacing: 1px;
+        position: relative; z-index: 2;
+      }
+      .ticker-track {
+        display: inline-block;
+        animation: tickerRoll var(--ticker-dur, 90s) linear infinite;
+      }
+      .ticker-track:hover { animation-play-state: paused; cursor: default; }
+      @keyframes tickerRoll {
+        0%   { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+      }
+      .tk-item {
+        display: inline-block; margin: 0 20px;
+        transition: opacity 0.3s;
+      }
+      .tk-item:hover { opacity: 0.75; }
+      .tk-name { font-weight: 700; color: #93c5fd; margin-right: 5px; }
+      .tk-price { margin-right: 4px; }
+      .tk-up   { color: #34d399; }
+      .tk-dn   { color: #f87171; }
+      .tk-flat { color: #94a3b8; }
+      .tk-sep  { color: #2a5298; margin: 0 8px; }
+    `;
+    document.head.appendChild(st);
+  }
+
+  // ── Élément HTML (créé une seule fois, inséré après le header) ───────────
+  if (!document.getElementById('liveTicker')) {
+    const bar = document.createElement('div');
+    bar.id = 'liveTicker';
+    bar.innerHTML = '<div class="ticker-track" id="tickerTrack"></div>';
+    // Insérer juste après l'en-tête de l'app
+    // Insérer AVANT le toolbar (tout en haut du body, avant toute nav sticky)
+    const toolbar = document.querySelector('.toolbar') ||
+                    document.querySelector('[class*="toolbar"]') ||
+                    document.body.firstElementChild;
+    if (toolbar) toolbar.insertAdjacentElement('beforebegin', bar);
+    else document.body.insertAdjacentElement('afterbegin', bar);
+
+    // Décaler le toolbar et la nav-bar pour compenser la hauteur du ticker (~36px)
+    setTimeout(() => {
+      const h = bar.offsetHeight || 36;
+      const tb = document.querySelector('.toolbar');
+      const nb = document.querySelector('.nav-bar');
+      if (tb) tb.style.top = '0px';            // toolbar reste en haut
+      if (nb) nb.style.top = (60) + 'px';      // nav-bar inchangée — le ticker est statique
+    }, 50);
+  }
+
+  // ── Contenu : tous les titres BRVM ────────────────────────────────────────
+  const items = stocks.map(s => {
+    const cls    = s.var1d > 0 ? 'tk-up' : s.var1d < 0 ? 'tk-dn' : 'tk-flat';
+    const arrow  = s.var1d > 0 ? '▲' : s.var1d < 0 ? '▼' : '─';
+    const pct    = (s.var1d > 0 ? '+' : '') + s.var1d.toFixed(2) + '%';
+    const price  = s.price.toLocaleString('fr');
+    return `<span class="tk-item">
+      <span class="tk-name">${s.ticker}</span>
+      <span class="tk-price">${price}</span>
+      <span class="${cls}">${arrow}${pct}</span>
+    </span><span class="tk-sep">|</span>`;
+  }).join('');
+
+  const track = document.getElementById('tickerTrack');
+  if (track) {
+    // Dupliquer pour défilement infini sans saut
+    track.innerHTML = items + items;
+    // Durée proportionnelle au nombre de titres (3s par titre)
+    const dur = Math.max(60, stocks.length * 3);
+    document.getElementById('liveTicker')?.style.setProperty('--ticker-dur', dur + 's');
+  }
 }
 
 // ==================== MISE À JOUR DES COURS ====================
@@ -2796,6 +2954,314 @@ function populateTASelects() {
       el.appendChild(opt);
     });
   });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  SIGNAUX ANALYSTE — Recommandations externes (coach, analyste)
+// ══════════════════════════════════════════════════════════════════════════════
+const ANALYST_KEY = "brvm_analyst_signals";
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  MOTEUR DE RECOMMANDATIONS — Génère les signaux dans le format coach
+// ══════════════════════════════════════════════════════════════════════════════
+function generateMyRecommendations() {
+  const today   = new Date().toISOString().split("T")[0];
+  const anneeN1 = new Date().getFullYear() + 1;
+  const nouveaux = [];
+
+  // S'assurer que l'historique est initialisé
+  seedHistory();
+
+  // ── STRATÉGIE DE RENTE ─────────────────────────────────────────────────
+  // Sélection : dividende ≥ 5%, PER > 0 et < 22, capitalisation > 50 Mds
+  // Tri : score = rendement + (22 - PER) × 0.4
+  const renteList = stocks
+    .filter(s => s.div >= 5 && s.per > 0 && s.per < 22 && s.price > 0)
+    .map(s => {
+      // Ajustement prix d'entrée via RSI si historique disponible
+      let prixConseille = s.price;
+      let rsiInfo = "";
+      try {
+        const an = analyzeStock(s.ticker);
+        if (!an.error && an.rsi !== null) {
+          if (an.rsi > 65) prixConseille = Math.round(s.price * 0.97 / 50) * 50;
+          rsiInfo = ` · RSI ${an.rsi.toFixed(0)}`;
+        }
+      } catch(e) {}
+      const rendementNet = +s.div.toFixed(2);
+      const score = rendementNet + (22 - s.per) * 0.4;
+      return { s, prixConseille, rendementNet, score, rsiInfo };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4);
+
+  renteList.forEach(({ s, prixConseille, rendementNet, rsiInfo }) => {
+    nouveaux.push({
+      ticker: s.ticker, strategie: "RENTE",
+      prix: prixConseille || s.price,
+      rendement: rendementNet,
+      cible: null, cible12m: null,
+      coach: "BRVM Invest Pro — Analyse automatique",
+      date: today,
+      notes: `PER ${s.per} · Dividende ${s.div}%${rsiInfo}`
+    });
+  });
+
+  // ── STRATÉGIE DE CROISSANCE ─────────────────────────────────────────────
+  // Sélection : soit par signal technique (si historique OK), soit par momentum fondamental
+  const croissanceList = [];
+
+  stocks.forEach(s => {
+    if (s.price <= 0) return;
+    let force = 0, conf = 50;
+    let prixConseille = s.price;
+    let cibleValo = null, cible12m = null;
+    let infoNote = "";
+
+    // Tentative analyse technique
+    try {
+      const an = analyzeStock(s.ticker);
+      if (!an.error && an.rsi !== null && an.bull !== undefined) {
+        if (an.rsi > 73) return; // suracheté
+        if (an.bull <= an.bear) return; // pas haussier
+        force = an.bull - an.bear;
+        conf  = an.conf || 50;
+        if (an.rsi < 45) prixConseille = Math.round(s.price * 0.98 / 50) * 50;
+        cibleValo = an.tgt2 ? Math.round(an.tgt2 / 50) * 50 : Math.round(s.price * 1.18 / 100) * 100;
+        cible12m  = an.tgt1 ? Math.round(an.tgt1 / 50) * 50 : Math.round(s.price * 1.10 / 100) * 100;
+        infoNote  = `RSI ${an.rsi.toFixed(0)} · Bull ${an.bull}pts · Conf. ${an.conf}%`;
+      } else {
+        // Fallback : sélection par momentum fondamental (var1d positif + PER attractif)
+        if (s.var1d < 0.5 || s.per <= 0 || s.per > 25) return;
+        force = s.var1d * 2;
+        conf  = 50;
+        // Cibles fondamentales basées sur la volatilité historique estimée
+        const volEst = 0.018; // ~1.8% / jour par défaut sur BRVM
+        cibleValo = Math.round(s.price * (1 + volEst * 60) / 100) * 100;  // ~+18% sur 60j
+        cible12m  = Math.round(s.price * (1 + volEst * 30) / 100) * 100;  // ~+9% sur 30j
+        infoNote  = `Momentum +${s.var1d}% · PER ${s.per}`;
+      }
+    } catch(e) {
+      return;
+    }
+
+    // Calcul du potentiel
+    const divMontant = prixConseille * s.div / 100;
+    const potMin = cible12m  ? +((cible12m  - prixConseille + divMontant) / prixConseille * 100).toFixed(1) : null;
+    const potMax = cibleValo ? +((cibleValo - prixConseille + divMontant) / prixConseille * 100).toFixed(1) : null;
+
+    if (potMin !== null && potMin < 3) return; // écarter si potentiel trop faible
+
+    croissanceList.push({ s, prixConseille, cibleValo, cible12m, potMin, potMax, force, conf, infoNote });
+  });
+
+  croissanceList
+    .sort((a, b) => (b.force * b.conf) - (a.force * a.conf))
+    .slice(0, 4)
+    .forEach(({ s, prixConseille, cibleValo, cible12m, potMin, potMax, infoNote }) => {
+      nouveaux.push({
+        ticker: s.ticker, strategie: "CROISSANCE",
+        prix: prixConseille || s.price,
+        rendement: null,
+        cible: cibleValo, cible12m, annee: anneeN1,
+        potMin, potMax,
+        coach: "BRVM Invest Pro — Analyse automatique",
+        date: today,
+        notes: infoNote
+      });
+    });
+
+  if (nouveaux.length === 0) {
+    document.getElementById("analystSignals").innerHTML =
+      `<div style="color:var(--warning);padding:16px;background:var(--bg);border-radius:8px">
+        ⚠️ Aucune recommandation générée — vérifiez que les cours sont à jour et relancez.
+      </div>`;
+    return;
+  }
+
+  // Conserver les signaux externes (du coach), remplacer les signaux auto
+  const existing = getAnalystSignals().filter(s => s.coach !== "BRVM Invest Pro — Analyse automatique");
+  saveAnalystSignals([...nouveaux, ...existing]);
+  renderAnalystSignals();
+}
+
+function getAnalystSignals() {
+  try { return JSON.parse(localStorage.getItem(ANALYST_KEY) || "[]"); }
+  catch { return []; }
+}
+
+function saveAnalystSignals(signals) {
+  localStorage.setItem(ANALYST_KEY, JSON.stringify(signals));
+}
+
+function toggleAddSignal() {
+  const form = document.getElementById("addSignalForm");
+  if (!form) return;
+  const show = form.style.display === "none";
+  form.style.display = show ? "block" : "none";
+  if (show) {
+    // Peupler le select ticker
+    const sel = document.getElementById("saTicker");
+    if (sel && sel.options.length === 0) {
+      stocks.forEach(s => {
+        const o = document.createElement("option");
+        o.value = s.ticker; o.textContent = `${s.ticker} — ${s.name}`;
+        sel.appendChild(o);
+      });
+    }
+    document.getElementById("saDate").value = new Date().toISOString().split("T")[0];
+  }
+}
+
+function saveAnalystSignal() {
+  const ticker = document.getElementById("saTicker")?.value;
+  const strategie = document.getElementById("saStrategie")?.value;
+  const prix = parseFloat(document.getElementById("saPrix")?.value);
+  const cible = parseFloat(document.getElementById("saCible")?.value) || null;
+  const cible12m = parseFloat(document.getElementById("saCible12m")?.value) || null;
+  const annee = parseInt(document.getElementById("saAnnee")?.value) || null;
+  const coach = document.getElementById("saCoach")?.value || "Analyste";
+  const date  = document.getElementById("saDate")?.value || new Date().toISOString().split("T")[0];
+  const notes = document.getElementById("saNotes")?.value || "";
+
+  if (!ticker || isNaN(prix)) { alert("Ticker et prix conseillé obligatoires"); return; }
+
+  const signals = getAnalystSignals();
+  signals.unshift({ ticker, strategie, prix, cible, cible12m, annee, coach, date, notes });
+  saveAnalystSignals(signals);
+  toggleAddSignal();
+  renderAnalystSignals();
+}
+
+function renderAnalystSignals() {
+  const container = document.getElementById("analystSignals");
+  if (!container) return;
+  const signals = getAnalystSignals();
+
+  if (signals.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:32px;color:var(--text-muted)">
+        <div style="font-size:2rem;margin-bottom:8px">📋</div>
+        <div style="font-weight:600">Aucune recommandation enregistrée</div>
+        <div style="font-size:0.82rem;margin-top:4px">Clique sur <strong>+ Ajouter signal</strong> pour saisir une recommandation de ton analyste.</div>
+      </div>`;
+    return;
+  }
+
+  // Grouper par coach + date
+  const grouped = {};
+  signals.forEach((sig, idx) => {
+    const key = `${sig.coach || "Analyste"} · ${sig.date}`;
+    if (!grouped[key]) grouped[key] = { coach: sig.coach, date: sig.date, rente: [], croissance: [] };
+    (sig.strategie === "RENTE" ? grouped[key].rente : grouped[key].croissance).push({ ...sig, _idx: idx });
+  });
+
+  container.innerHTML = Object.entries(grouped).map(([key, grp]) => `
+    <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px">
+
+      <!-- En-tête du groupe -->
+      <div style="background:linear-gradient(135deg,#1a3c6e,#2a5298);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-weight:800;font-size:0.9rem">⚡ UPDATE SUGGESTIONS</div>
+          <div style="font-size:0.78rem;opacity:0.85;margin-top:2px">${grp.coach || "Analyste"} · AU ${grp.date}</div>
+        </div>
+        <div style="font-size:0.72rem;opacity:0.7">${grp.rente.length + grp.croissance.length} titre(s)</div>
+      </div>
+
+      <div style="padding:16px">
+
+        <!-- STRATÉGIE DE RENTE -->
+        ${grp.rente.length > 0 ? `
+        <div style="margin-bottom:16px">
+          <div style="font-weight:800;font-size:0.85rem;color:#8b5cf6;border-bottom:2px solid #8b5cf620;padding-bottom:6px;margin-bottom:12px">
+            ★ STRATÉGIE DE RENTE ★
+          </div>
+          ${grp.rente.map(sig => {
+            const s = stocks.find(x => x.ticker === sig.ticker);
+            return `
+            <div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:10px;border-left:4px solid #8b5cf6;position:relative">
+              <button onclick="deleteSignal(${sig._idx})" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.78rem">✕</button>
+              <div style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:10px">${sig.ticker}${s ? ' — ' + s.name : ''}</div>
+              <div style="display:flex;flex-direction:column;gap:5px;font-size:0.88rem">
+                <div style="display:flex;justify-content:space-between">
+                  <span style="color:var(--text-muted)">Prix conseillé</span>
+                  <span style="font-weight:700">${sig.prix.toLocaleString("fr")} FCFA</span>
+                </div>
+                <div style="display:flex;justify-content:space-between">
+                  <span style="color:var(--text-muted)">Rendement</span>
+                  <span style="font-weight:700;color:#8b5cf6">${sig.rendement}%</span>
+                </div>
+                ${sig.notes ? `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;font-style:italic">${sig.notes}</div>` : ""}
+              </div>
+            </div>`;
+          }).join("")}
+        </div>` : ""}
+
+        <!-- STRATÉGIE DE CROISSANCE -->
+        ${grp.croissance.length > 0 ? `
+        <div>
+          <div style="font-weight:800;font-size:0.85rem;color:#f59e0b;border-bottom:2px solid #f59e0b20;padding-bottom:6px;margin-bottom:12px">
+            ★ STRATÉGIE DE CROISSANCE ★
+          </div>
+          ${grp.croissance.map(sig => {
+            const s = stocks.find(x => x.ticker === sig.ticker);
+            const anneeValo = sig.annee || new Date().getFullYear() + 1;
+            return `
+            <div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:10px;border-left:4px solid #f59e0b;position:relative">
+              <button onclick="deleteSignal(${sig._idx})" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.78rem">✕</button>
+              <div style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:10px">${sig.ticker}${s ? ' — ' + s.name : ''}</div>
+              <div style="display:flex;flex-direction:column;gap:5px;font-size:0.88rem">
+                <div style="display:flex;justify-content:space-between">
+                  <span style="color:var(--text-muted)">Prix conseillé</span>
+                  <span style="font-weight:700">${sig.prix.toLocaleString("fr")} FCFA</span>
+                </div>
+                ${sig.cible ? `<div style="display:flex;justify-content:space-between">
+                  <span style="color:var(--text-muted)">Valorisation, Année ${anneeValo}</span>
+                  <span style="font-weight:700">${sig.cible.toLocaleString("fr")} FCFA</span>
+                </div>` : ""}
+                ${sig.cible12m ? `<div style="display:flex;justify-content:space-between">
+                  <span style="color:var(--text-muted)">Prix psychologique sur 12 mois</span>
+                  <span style="font-weight:700">${sig.cible12m.toLocaleString("fr")} FCFA</span>
+                </div>` : ""}
+                ${sig.potMin ? `<div style="display:flex;justify-content:space-between">
+                  <span style="color:var(--text-muted)">Potentiel de gain après dividende</span>
+                  <span style="font-weight:700;color:var(--success)">Compris entre ${sig.potMin}% et ${sig.potMax}%</span>
+                </div>` : ""}
+                ${sig.notes ? `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;font-style:italic">${sig.notes}</div>` : ""}
+              </div>
+            </div>`;
+          }).join("")}
+        </div>` : ""}
+
+      </div>
+    </div>
+  `).join("");
+}
+
+function deleteSignal(idx) {
+  const signals = getAnalystSignals();
+  signals.splice(idx, 1);
+  saveAnalystSignals(signals);
+  renderAnalystSignals();
+}
+
+// ── Navigation entre sections ─────────────────────────────────────────────
+function showSection(id) {
+  // Masquer toutes les sections
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  // Afficher la section cible
+  const target = document.getElementById(id);
+  if (target) target.classList.add('active');
+  // Mettre à jour le bouton actif
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`.nav-btn[onclick*="'${id}'"]`);
+  if (btn) btn.classList.add('active');
+  // Rendu spécifique selon la section
+  if      (id === 'analyse-technique') { const t = document.getElementById('atTicker')?.value; if (t) renderTA(); }
+  else if (id === 'predictions')       { renderTopTrades(); renderSignalTable(); renderAnalystSignals(); const t = document.getElementById('predTicker')?.value; if (t) renderPrediction(); }
+  else if (id === 'actualites')        { renderActualites(); }
+  else if (id === 'scoring')           { renderScoring(); }
+  else if (id === 'portefeuille')      { renderPortfolio(); }
 }
 
 </script>
